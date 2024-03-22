@@ -1,25 +1,20 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.dto;
 
 import lombok.*;
 import org.springframework.stereotype.Component;
 
-/**
- * TODO Sprint add-controllers.
- */
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 
 @Component
 @Data
 @AllArgsConstructor
 @NoArgsConstructor(force = true)
 @Builder(toBuilder = true)
-public class User {
+public class UserDto {
     private String name;
+    @Email
+    @NotEmpty
     private String email;
     private Integer id;
-    @Getter
-    private static int idCounter = 1;
-
-    public static void increaseIdCounter() {
-        idCounter++;
-    }
 }
