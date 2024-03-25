@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
@@ -9,9 +10,6 @@ import ru.practicum.shareit.user.dto.UserDto;
 import javax.validation.Valid;
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping(path = "/users")
 public class UserController {
@@ -29,23 +27,26 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public UserDto get(@PathVariable Integer userId) throws NotFoundException {
+    public UserDto get(@PathVariable int userId) throws NotFoundException {
         return userService.get(userId);
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public UserDto create(@Valid @RequestBody UserDto userDto) throws ValidationException {
         return userService.create(userDto);
     }
 
     @PatchMapping("/{userId}")
-    public UserDto update(@RequestBody UserDto userDto, @PathVariable Integer userId)
+    public UserDto update(@RequestBody UserDto userDto, @PathVariable int userId)
             throws NotFoundException, ValidationException {
-        return userService.update(userDto, userId);
+        userDto.setId(userId);
+        return userService.update(userDto);
     }
 
     @DeleteMapping("/{userId}")
-    public void delete(@PathVariable Integer userId) throws NotFoundException {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable int userId) throws NotFoundException {
         userService.delete(userId);
     }
 }

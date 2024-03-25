@@ -11,9 +11,9 @@ public interface UserStorage {
 
     User update(User user) throws NotFoundException, ValidationException;
 
-    void delete(Integer userId) throws NotFoundException;
+    void delete(Integer userId);
 
     List<User> getAll();
 
-    User get(Integer userId) throws NotFoundException;
+    User get(Integer userId);
 }

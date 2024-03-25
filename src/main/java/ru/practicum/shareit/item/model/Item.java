@@ -2,10 +2,7 @@ package ru.practicum.shareit.item.model;
 
 import lombok.*;
 import org.springframework.stereotype.Component;
-
-/**
- * TODO Sprint add-controllers.
- */
+import ru.practicum.shareit.user.User;
 
 @Component
 @Data
@@ -16,12 +13,6 @@ public class Item {
     private Integer id;
     private String name;
     private String description;
-    private Integer ownerId;
+    private User owner;
     private Boolean available;
-    @Getter
-    private static int idCounter = 1;
-
-    public static void increaseIdCounter() {
-        idCounter++;
-    }
 }

@@ -1,62 +1,45 @@
 package ru.practicum.shareit.user.storage;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.User;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
+    private static int idCounter = 1;
+
     private final Map<Integer, User> users = new HashMap<>();
+    private final Map<String, Integer> emailsById = new HashMap<>();
 
     @Override
     public User create(User user) throws ValidationException {
-        if (users.values().stream()
-                .anyMatch(entity -> entity.getEmail().equals(user.getEmail()))
-                ) {
-            throw new ValidationException();
-        }
-        user.setId(User.getIdCounter());
-        User.increaseIdCounter();
+        user.setId(idCounter);
+        checkEmail(user.getEmail(), user.getId());
         users.put(user.getId(), user);
+        emailsById.put(user.getEmail(), user.getId());
+        increaseIdCounter();
         return user;
     }
 
     @Override
-    public User update(User user) throws NotFoundException, ValidationException {
-        if (users.containsKey(user.getId())) {
-            if (users.values().stream()
-                    .anyMatch(entity -> entity.getEmail().equals(user.getEmail())
-                            && !Objects.equals(entity.getId(), user.getId()))
-            ) {
-                throw new ValidationException();
-            }
-            User existentUser = users.get(user.getId());
-            if (user.getEmail() == null) {
-                user.setEmail(existentUser.getEmail());
-            }
-            if (user.getName() == null) {
-                user.setName(existentUser.getName());
-            }
-            users.put(user.getId(), user);
-        } else {
-            throw new NotFoundException();
-        }
+    public User update(User user) throws ValidationException {
+        checkEmail(user.getEmail(), user.getId());
+        User existentUser = users.get(user.getId());
+
+        users.put(user.getId(), user);
+        emailsById.remove(existentUser.getEmail());
+        emailsById.put(user.getEmail(), user.getId());
         return user;
     }
 
     @Override
-    public void delete(Integer userId) throws NotFoundException {
-        if (users.containsKey(userId)) {
-            users.remove(userId);
-        } else {
-            throw new NotFoundException();
-        }
+    public void delete(Integer userId) {
+        emailsById.remove(users.get(userId).getEmail());
+        users.remove(userId);
     }
 
     @Override
@@ -65,11 +48,20 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User get(Integer userId) throws NotFoundException {
-        if (users.containsKey(userId)) {
-            return users.get(userId);
-        } else {
-            throw new NotFoundException();
+    public User get(Integer userId) {
+        return users.get(userId);
+    }
+
+    private static void increaseIdCounter() {
+        idCounter++;
+    }
+
+    private void checkEmail(String email, int userId) {
+        if (emailsById.get(email) == null) {
+            return;
+        }
+        if (emailsById.get(email) != userId) {
+            throw new ValidationException("Пользователь с таким email уже существует");
         }
     }
 }

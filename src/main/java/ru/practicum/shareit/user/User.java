@@ -16,10 +16,4 @@ public class User {
     private String name;
     private String email;
     private Integer id;
-    @Getter
-    private static int idCounter = 1;
-
-    public static void increaseIdCounter() {
-        idCounter++;
-    }
 }

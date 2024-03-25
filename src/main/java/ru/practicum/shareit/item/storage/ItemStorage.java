@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.storage;
 
-import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
@@ -8,11 +7,9 @@ import java.util.List;
 public interface ItemStorage {
     Item add(Item item);
 
-    Item update(Item item) throws NotFoundException;
+    Item update(Item item);
 
-    Item findById(Integer id) throws NotFoundException;
-
-    List<Item> findAll(Integer userId);
+    Item findById(Integer id);
 
     List<Item> findByText(String text);
 
