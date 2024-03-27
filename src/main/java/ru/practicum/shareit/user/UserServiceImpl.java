@@ -29,33 +29,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto create(UserDto userDto) throws ValidationException {
+    public UserDto create(UserDto userDto) {
         return userMapper.convertUser(userStorage.create(userMapper.convertUserDto(userDto)));
     }
 
     @Override
-    public UserDto update(UserDto userDto) throws NotFoundException, ValidationException {
-        User user = userMapper.convertUserDto(userDto);
-        User existentUser = userStorage.get(user.getId());
+    public UserDto update(UserDto userDto) {
+        User newUser = userMapper.convertUserDto(userDto);
+        User existentUser = userStorage.get(newUser.getId());
         if (existentUser == null) {
-            throw new NotFoundException("Пользователя с id " + user.getId() + " не существует");
+            throw new NotFoundException("Пользователя с id " + newUser.getId() + " не существует");
         }
+        User existentUserCopy = existentUser.toBuilder().build();
 
 
-        if (user.getEmail() == null) {
-            user.setEmail(existentUser.getEmail());
-        } else {
-            checkEmail(user.getEmail());
+        if (newUser.getEmail() != null) {
+            checkEmail(newUser.getEmail());
+            existentUserCopy.setEmail(newUser.getEmail());
         }
-        if (user.getName() == null) {
-            user.setName(existentUser.getName());
+        if (newUser.getName() != null) {
+            existentUserCopy.setName(newUser.getName());
         }
 
-        return userMapper.convertUser(userStorage.update(user));
+        return userMapper.convertUser(userStorage.update(existentUserCopy));
     }
 
     @Override
-    public void delete(Integer userId) throws NotFoundException {
+    public void delete(int userId) {
         User user = userStorage.get(userId);
         if (user == null) {
             throw new NotFoundException("Пользователя с id " + userId + " не существует");
@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto get(Integer userId) throws NotFoundException {
+    public UserDto get(int userId) {
         User user = userStorage.get(userId);
         if (user == null) {
             throw new NotFoundException("Пользователя с id " + userId + " не существует");

@@ -1,12 +1,13 @@
 package ru.practicum.shareit.user.dto;
 
-import lombok.*;
-import org.springframework.stereotype.Component;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
-@Component
 @Data
 @AllArgsConstructor
 @NoArgsConstructor(force = true)

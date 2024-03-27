@@ -1,14 +1,22 @@
 package ru.practicum.shareit.item;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class ItemMapper {
+    private final UserMapper userMapper;
+
+    @Autowired
+    public ItemMapper(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
 
     public List<Item> convertListItemDto(List<ItemDto> list) {
         return list.stream()
@@ -29,7 +37,7 @@ public class ItemMapper {
                 .description(itemDto.getDescription())
                 .id(itemDto.getId())
                 .available(itemDto.getAvailable())
-                .owner(itemDto.getOwner())
+                .owner(userMapper.convertUserDto(itemDto.getOwner()))
                 .build();
     }
 
@@ -40,7 +48,7 @@ public class ItemMapper {
                 .description(item.getDescription())
                 .id(item.getId())
                 .available(item.getAvailable())
-                .owner(item.getOwner())
+                .owner(userMapper.convertUser(item.getOwner()))
                 .build();
     }
 }

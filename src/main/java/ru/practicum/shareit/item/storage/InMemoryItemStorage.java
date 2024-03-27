@@ -40,7 +40,7 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public Item findById(Integer id) {
+    public Item findById(int id) {
         return items.get(id);
     }
 
@@ -53,7 +53,7 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public List<Item> findByOwner(Integer userid) {
+    public List<Item> findByOwner(int userid) {
         return List.copyOf(itemsByOwner.get(userid));
     }
 

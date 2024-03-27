@@ -1,13 +1,10 @@
 package ru.practicum.shareit.user;
 
-import lombok.*;
-import org.springframework.stereotype.Component;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * TODO Sprint add-controllers.
- */
-
-@Component
 @Data
 @AllArgsConstructor
 @NoArgsConstructor(force = true)

@@ -16,7 +16,7 @@ public class InMemoryUserStorage implements UserStorage {
     private final Map<String, Integer> emailsById = new HashMap<>();
 
     @Override
-    public User create(User user) throws ValidationException {
+    public User create(User user) {
         user.setId(idCounter);
         checkEmail(user.getEmail(), user.getId());
         users.put(user.getId(), user);
@@ -26,7 +26,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User update(User user) throws ValidationException {
+    public User update(User user) {
         checkEmail(user.getEmail(), user.getId());
         User existentUser = users.get(user.getId());
 
@@ -37,7 +37,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void delete(Integer userId) {
+    public void delete(int userId) {
         emailsById.remove(users.get(userId).getEmail());
         users.remove(userId);
     }
@@ -48,7 +48,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User get(Integer userId) {
+    public User get(int userId) {
         return users.get(userId);
     }
 

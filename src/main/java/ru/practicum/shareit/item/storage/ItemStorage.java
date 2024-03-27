@@ -9,9 +9,9 @@ public interface ItemStorage {
 
     Item update(Item item);
 
-    Item findById(Integer id);
+    Item findById(int id);
 
     List<Item> findByText(String text);
 
-    List<Item> findByOwner(Integer userid);
+    List<Item> findByOwner(int userid);
 }

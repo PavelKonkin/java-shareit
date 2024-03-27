@@ -1,7 +1,5 @@
 package ru.practicum.shareit.user;
 
-import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
@@ -9,11 +7,11 @@ import java.util.List;
 public interface UserService {
     List<UserDto> getAll();
 
-    UserDto create(UserDto userDto) throws ValidationException;
+    UserDto create(UserDto userDto);
 
-    UserDto update(UserDto userDto) throws NotFoundException, ValidationException;
+    UserDto update(UserDto userDto);
 
-    void delete(Integer userId) throws NotFoundException;
+    void delete(int userId);
 
-    UserDto get(Integer userId) throws NotFoundException;
+    UserDto get(int userId);
 }

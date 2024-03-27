@@ -1,19 +1,17 @@
 package ru.practicum.shareit.user.storage;
 
-import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.User;
 
 import java.util.List;
 
 public interface UserStorage {
-    User create(User user) throws ValidationException;
+    User create(User user);
 
-    User update(User user) throws NotFoundException, ValidationException;
+    User update(User user);
 
-    void delete(Integer userId);
+    void delete(int userId);
 
     List<User> getAll();
 
-    User get(Integer userId);
+    User get(int userId);
 }

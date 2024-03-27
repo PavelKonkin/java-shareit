@@ -1,16 +1,16 @@
 package ru.practicum.shareit.user;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.Valid;
 import java.util.List;
 
 @RestController
+@Slf4j
 @RequestMapping(path = "/users")
 public class UserController {
 
@@ -23,30 +23,43 @@ public class UserController {
 
     @GetMapping
     public List<UserDto> getAll() {
-        return userService.getAll();
+        log.info("Получен запрос на список всех пользователей");
+        List<UserDto> result = userService.getAll();
+        log.info("Список пользователей сформирован: {}", result);
+        return result;
     }
 
     @GetMapping("/{userId}")
-    public UserDto get(@PathVariable int userId) throws NotFoundException {
-        return userService.get(userId);
+    public UserDto get(@PathVariable int userId) {
+        log.info("Получен запрос на получение пользователя с id {}", userId);
+        UserDto result = userService.get(userId);
+        log.info("Найден пользователь: {}", result);
+        return result;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDto create(@Valid @RequestBody UserDto userDto) throws ValidationException {
-        return userService.create(userDto);
+    public UserDto create(@Valid @RequestBody UserDto userDto) {
+        log.info("Получен запрос на создание пользователя  {}", userDto);
+        UserDto result = userService.create(userDto);
+        log.info("Создан пользователь: {}", result);
+        return result;
     }
 
     @PatchMapping("/{userId}")
-    public UserDto update(@RequestBody UserDto userDto, @PathVariable int userId)
-            throws NotFoundException, ValidationException {
+    public UserDto update(@RequestBody UserDto userDto, @PathVariable int userId) {
+        log.info("Получен запрос на обновление пользователя {} с id {}", userDto, userId);
         userDto.setId(userId);
+        UserDto result = userService.update(userDto);
+        log.info("Обновлен пользователь: {}", result);
         return userService.update(userDto);
     }
 
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable int userId) throws NotFoundException {
+    public void delete(@PathVariable int userId) {
+        log.info("Получен запрос на удаление пользователя с id {}", userId);
         userService.delete(userId);
+        log.info("Удален пользователь с id  {}", userId);
     }
 }
