@@ -3,6 +3,7 @@ package ru.practicum.shareit.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -47,6 +48,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
+    @Validated
     public UserDto update(@RequestBody UserDto userDto, @PathVariable int userId) {
         log.info("Получен запрос на обновление пользователя {} с id {}", userDto, userId);
         userDto.setId(userId);

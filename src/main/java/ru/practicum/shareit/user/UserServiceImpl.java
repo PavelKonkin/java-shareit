@@ -3,19 +3,15 @@ package ru.practicum.shareit.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
     private final UserMapper userMapper;
-    private static final String EMAIL_REGEX = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$";
 
     @Autowired
     public UserServiceImpl(UserStorage userStorage, UserMapper userMapper) {
@@ -44,7 +40,6 @@ public class UserServiceImpl implements UserService {
 
 
         if (newUser.getEmail() != null) {
-            checkEmail(newUser.getEmail());
             existentUserCopy.setEmail(newUser.getEmail());
         }
         if (newUser.getName() != null) {
@@ -70,13 +65,5 @@ public class UserServiceImpl implements UserService {
             throw new NotFoundException("Пользователя с id " + userId + " не существует");
         }
         return userMapper.convertUser(user);
-    }
-
-    private void checkEmail(String email) {
-        Pattern pattern = Pattern.compile(EMAIL_REGEX);
-        Matcher matcher = pattern.matcher(email);
-        if (!matcher.matches()) {
-            throw new ValidationException("Адрес не является адресом электронной почты");
-        }
     }
 }
