@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserUpdateDto;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.List;
@@ -30,8 +31,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto update(UserDto userDto) {
-        User newUser = userMapper.convertUserDto(userDto);
+    public UserUpdateDto update(UserUpdateDto userDto) {
+        User newUser = userMapper.convertUserUpdateDto(userDto);
         User existentUser = userStorage.get(newUser.getId());
         if (existentUser == null) {
             throw new NotFoundException("Пользователя с id " + newUser.getId() + " не существует");
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
             existentUserCopy.setName(newUser.getName());
         }
 
-        return userMapper.convertUser(userStorage.update(existentUserCopy));
+        return userMapper.convertUserToUserUpdateDto(userStorage.update(existentUserCopy));
     }
 
     @Override
