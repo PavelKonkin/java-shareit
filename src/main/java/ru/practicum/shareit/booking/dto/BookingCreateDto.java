@@ -4,8 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.validator.DateComparisonConstraint;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
@@ -15,15 +14,15 @@ import java.time.LocalDateTime;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookingDto {
-    private Integer id;
+@DateComparisonConstraint
+public class BookingCreateDto {
     @Future
     @NotNull
     private LocalDateTime start;
     @Future
     @NotNull
     private LocalDateTime end;
-    private BookingStateDto status;
-    private UserDto booker;
-    private ItemDto item;
+    private BookingStateDto status = BookingStateDto.WAITING;
+    private int bookerId;
+    private int itemId;
 }
