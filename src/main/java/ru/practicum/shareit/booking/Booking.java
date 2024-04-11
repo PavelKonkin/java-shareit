@@ -1,7 +1,6 @@
 package ru.practicum.shareit.booking;
 
 import lombok.*;
-import org.hibernate.proxy.HibernateProxy;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 
@@ -10,24 +9,29 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
+@NamedEntityGraph(name = "booking.item.user", attributeNodes = {
+        @NamedAttributeNode("item"),
+        @NamedAttributeNode(value = "item", subgraph = "item.user"),
+        @NamedAttributeNode("booker")
+}, subgraphs = @NamedSubgraph(name = "item.user", attributeNodes = @NamedAttributeNode("owner")))
 @Table(name = "bookings")
 @Getter
 @Setter
-@ToString
 @RequiredArgsConstructor
 @Builder(toBuilder = true)
 @AllArgsConstructor
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "booking_id")
     private Integer id;
     @Enumerated(EnumType.STRING)
     private BookingState status;
     @ManyToOne(fetch = FetchType.LAZY)
-    @ToString.Exclude
+    @JoinColumn(name = "item_id")
     private Item item;
     @ManyToOne(fetch = FetchType.LAZY)
-    @ToString.Exclude
+    @JoinColumn(name = "booker_id")
     private User booker;
     @Column(name = "start_date")
     private LocalDateTime startDate;
@@ -35,22 +39,22 @@ public class Booking {
     private LocalDateTime endDate;
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null) return false;
-        Class<?> oEffectiveClass = o instanceof HibernateProxy ?
-                ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
-        Class<?> thisEffectiveClass = this instanceof HibernateProxy ?
-                ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         Booking booking = (Booking) o;
-        return getId() != null && Objects.equals(getId(), booking.getId());
+        return Objects.equals(id, booking.id);
     }
 
     @Override
-    public final int hashCode() {
-        return this instanceof HibernateProxy ?
-                ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() :
-                getClass().hashCode();
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Booking{" +
+                "id=" + id +
+                '}';
     }
 }

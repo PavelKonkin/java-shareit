@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -48,11 +49,32 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemWithBookingsAndCommentsDto> getAll(int userId) {
-        List<Item> items = itemRepository.findAllByOwnerIdOrderById(userId);
-        List<ItemWithBookingsAndCommentsDto> itemsDto = itemMapper.convertListItemToBookingDto(items);
-        for (ItemWithBookingsAndCommentsDto itemDto : itemsDto) {
-            setBookingsToItemDto(itemDto);
-            setCommentsToItemDto(itemDto);
+        Sort sort = Sort.by("id");
+        List<Item> items = itemRepository.findAllByOwnerId(userId, sort);
+        List<Integer> itemsId = items.stream()
+                .map(Item::getId)
+                .collect(Collectors.toList());
+        List<Comment> comments = commentRepository.findAllByItemsId(itemsId);
+        List<Booking> bookings = bookingRepository.findAllByItemsId(itemsId);
+        Map<Integer, List<Comment>> commentsByItem = comments.stream()
+                .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
+        Map<Integer, List<Booking>> bookingsByItem = bookings.stream()
+                .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
+        List<ItemWithBookingsAndCommentsDto> itemsDto = new ArrayList<>();
+        for (Item item : items) {
+            ItemWithBookingsAndCommentsDto itemWithBookingsAndCommentsDto = itemMapper.convertItemToBookingDto(item);
+            int itemId = item.getId();
+
+            List<Booking> itemBooking = bookingsByItem.get(itemId);
+            if (itemBooking != null) {
+                setBookingsToItemDto(itemWithBookingsAndCommentsDto, itemBooking);
+            }
+
+            List<Comment> itemComments = commentsByItem.get(itemId);
+            if (itemComments != null) {
+                setCommentsToItemDto(itemWithBookingsAndCommentsDto, itemComments);
+            }
+            itemsDto.add(itemWithBookingsAndCommentsDto);
         }
         return itemsDto;
     }
@@ -98,9 +120,12 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("Предмета с id " + itemId + " не существует"));
         ItemWithBookingsAndCommentsDto itemWithBookingsDto = itemMapper.convertItemToBookingDto(item);
         if (item.getOwner().getId() == userId) { // Выдаем бронирования только хозяину вещи
-            setBookingsToItemDto(itemWithBookingsDto);
+            List<Booking> bookings = bookingRepository.findAllByItemId(itemId);
+            setBookingsToItemDto(itemWithBookingsDto, bookings);
         }
-        setCommentsToItemDto(itemWithBookingsDto);
+        Sort sort = Sort.by("created").descending();
+        List<Comment> comments = commentRepository.findAllByItemId(itemId, sort);
+        setCommentsToItemDto(itemWithBookingsDto, comments);
         return itemWithBookingsDto;
     }
 
@@ -113,12 +138,12 @@ public class ItemServiceImpl implements ItemService {
         return itemMapper.convertListItem(items);
     }
 
-    private void setBookingsToItemDto(ItemWithBookingsAndCommentsDto itemWithBookingsDto) {
-        List<Booking> bookings = bookingRepository.findAllByItemId(itemWithBookingsDto.getId());
-        Optional<Booking> lastBooking = bookings.stream()
+    private void setBookingsToItemDto(ItemWithBookingsAndCommentsDto itemWithBookingsDto,
+                                      List<Booking> itemBookings) {
+        Optional<Booking> lastBooking = itemBookings.stream()
                 .filter(e -> e.getStartDate().isBefore(LocalDateTime.now()) && e.getStatus().equals(BookingState.APPROVED))
                 .max(Comparator.comparing(Booking::getStartDate));
-        Optional<Booking> nextBooking = bookings.stream()
+        Optional<Booking> nextBooking = itemBookings.stream()
                 .filter(e -> e.getStartDate().isAfter(LocalDateTime.now()) && e.getStatus().equals(BookingState.APPROVED))
                 .min(Comparator.comparing(Booking::getStartDate));
         BookingShortDto lastBookingDto = lastBooking.map(bookingMapper::convertBookingToShortDto).orElse(null);
@@ -127,9 +152,9 @@ public class ItemServiceImpl implements ItemService {
         itemWithBookingsDto.setNextBooking(nextBookingDto);
     }
 
-    private void setCommentsToItemDto(ItemWithBookingsAndCommentsDto itemWithBookingsDto) {
-        List<Comment> comments = commentRepository.findAllByItemIdOrderByCreatedDesc(itemWithBookingsDto.getId());
-        itemWithBookingsDto.setComments(comments.stream()
+    private void setCommentsToItemDto(ItemWithBookingsAndCommentsDto itemWithBookingsDto,
+                                      List<Comment> itemComments) {
+        itemWithBookingsDto.setComments(itemComments.stream()
                 .map(commentMapper::convertComment)
                 .collect(Collectors.toList()));
     }

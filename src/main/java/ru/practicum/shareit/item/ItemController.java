@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.constant.Constants;
 import ru.practicum.shareit.item.dto.CommentCreateDto;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -27,7 +28,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemWithBookingsAndCommentsDto> getItems(@NotEmpty @RequestHeader("X-Sharer-User-Id") int userId) {
+    public List<ItemWithBookingsAndCommentsDto> getItems(@NotEmpty @RequestHeader(Constants.USER_HEADER) int userId) {
         log.info("Получен запрос на получение списка предметов пользователя с id {}", userId);
         List<ItemWithBookingsAndCommentsDto> result = itemService.getAll(userId);
         log.info("Найден список предметов пользователя с id {}: {}", userId, result);
@@ -35,7 +36,8 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemWithBookingsAndCommentsDto get(@PathVariable int itemId, @NotEmpty @RequestHeader("X-Sharer-User-Id") int userId) {
+    public ItemWithBookingsAndCommentsDto get(@PathVariable int itemId,
+                                              @NotEmpty @RequestHeader(Constants.USER_HEADER) int userId) {
         log.info("Получен запрос на получение предмета с id {}", itemId);
         ItemWithBookingsAndCommentsDto result = itemService.get(itemId, userId);
         log.info("Найден предмет {}:",  result);
@@ -54,7 +56,7 @@ public class ItemController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ItemDto create(@Valid @RequestBody ItemDto itemDto,
-                          @NotEmpty @RequestHeader("X-Sharer-User-Id") int userId) {
+                          @NotEmpty @RequestHeader(Constants.USER_HEADER) int userId) {
         log.info("Получен запрос на создание предмета {} с id пользоателя {}", itemDto, userId);
         ItemDto result = itemService.create(itemDto, userId);
         log.info("Создан предмет {}:",  result);
@@ -63,7 +65,7 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public ItemDto update(@RequestBody ItemDto itemDto,
-                          @NotEmpty @RequestHeader("X-Sharer-User-Id") int userId,
+                          @NotEmpty @RequestHeader(Constants.USER_HEADER) int userId,
                           @PathVariable int itemId) {
         log.info("Получен запрос на обновление предмета {} с id пользоателя {}", itemDto, userId);
         itemDto.setId(itemId);
@@ -74,7 +76,7 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentDto comment(@Valid @RequestBody CommentCreateDto commentCreateDto,
-                              @NotEmpty @RequestHeader("X-Sharer-User-Id") int userId,
+                              @NotEmpty @RequestHeader(Constants.USER_HEADER) int userId,
                               @PathVariable int itemId) {
         commentCreateDto.setItemId(itemId);
         commentCreateDto.setAuthorId(userId);
