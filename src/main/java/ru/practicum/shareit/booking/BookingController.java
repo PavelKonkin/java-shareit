@@ -61,8 +61,8 @@ public class BookingController {
                             @RequestParam(defaultValue = "ALL") String state) {
         log.info("Получен запрос на получение списка бронирований пользоателя с id {} со статусом {}",
                 userId, state);
-        checkStateParam(state);
-        List<BookingDto> bookingDto = bookingService.getAllForBooker(userId, state);
+        BookingStateDto bookingStateDto = getBookingStateValue(state);
+        List<BookingDto> bookingDto = bookingService.getAllForBooker(userId, bookingStateDto);
         log.info("Сформирован список бронирований {} пользователя с id {}",
                 bookingDto, userId);
         return bookingDto;
@@ -73,16 +73,18 @@ public class BookingController {
                                    @RequestParam(defaultValue = "ALL") String state) {
         log.info("Получен запрос на получение списка бронирований вещей пользоателя с id {} со статусом {}",
                 userId, state);
-        checkStateParam(state);
-        List<BookingDto> bookingDto = bookingService.getAllForOwner(userId, state);
+        BookingStateDto bookingStateDto = getBookingStateValue(state);
+        List<BookingDto> bookingDto = bookingService.getAllForOwner(userId, bookingStateDto);
         log.info("Сформирован список бронирований вещей {} пользователя с id {}",
                 bookingDto, userId);
         return bookingDto;
     }
 
-    private void checkStateParam(String state) {
+    private BookingStateDto getBookingStateValue(String state) {
         if (Arrays.stream(BookingStateDto.values()).map(Enum::toString).noneMatch(e -> e.equals(state))) {
             throw new IllegalArgumentException("Unknown state: " + state);
+        } else {
+            return BookingStateDto.valueOf(state);
         }
     }
 }

@@ -95,9 +95,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllForBooker(int userId, String state) {
+    public List<BookingDto> getAllForBooker(int userId, BookingStateDto bookingStateDto) {
         checkUser(userId);
-        BookingStateDto bookingStateDto = BookingStateDto.valueOf(state);
         List<Booking> result = new ArrayList<>();
         Sort sort = Sort.by("id").descending();
 
@@ -129,9 +128,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllForOwner(int userId, String state) {
+    public List<BookingDto> getAllForOwner(int userId, BookingStateDto bookingStateDto) {
         checkUser(userId);
-        BookingStateDto bookingStateDto = BookingStateDto.valueOf(state);
         List<Booking> result = new ArrayList<>();
         Sort sort = Sort.by("id").descending();
         switch (bookingStateDto) {
