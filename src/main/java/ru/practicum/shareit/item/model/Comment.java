@@ -1,7 +1,6 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.item.model;
 
 import lombok.*;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
@@ -9,52 +8,44 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@NamedEntityGraph(name = "booking.item.user", attributeNodes = {
+@NamedEntityGraph(name = "comment.item.owner", attributeNodes = {
         @NamedAttributeNode("item"),
         @NamedAttributeNode(value = "item", subgraph = "item.user"),
-        @NamedAttributeNode("booker")
+        @NamedAttributeNode("author")
 }, subgraphs = @NamedSubgraph(name = "item.user", attributeNodes = @NamedAttributeNode("owner")))
-@Table(name = "bookings")
+@Table(name = "comments")
+@Builder(toBuilder = true)
 @Getter
 @Setter
+@ToString
 @RequiredArgsConstructor
-@Builder(toBuilder = true)
 @AllArgsConstructor
-public class Booking {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "booking_id")
+    @Column(name = "comment_id")
     private Integer id;
-    @Enumerated(EnumType.STRING)
-    private BookingState status;
     @ManyToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
     @JoinColumn(name = "item_id")
     private Item item;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booker_id")
-    private User booker;
-    @Column(name = "start_date")
-    private LocalDateTime startDate;
-    @Column(name = "end_date")
-    private LocalDateTime endDate;
+    @JoinColumn(name = "author_id")
+    @ToString.Exclude
+    private User author;
+    private String text;
+    private LocalDateTime created = LocalDateTime.now();
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Booking booking = (Booking) o;
-        return Objects.equals(id, booking.id);
+        Comment comment = (Comment) o;
+        return Objects.equals(id, comment.id);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Booking{" +
-                "id=" + id +
-                '}';
     }
 }
