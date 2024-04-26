@@ -46,10 +46,10 @@ public class Booking {
         return Objects.equals(id, booking.id);
     }
 
-//    @Override
-//    public int hashCode() {
-//        return Objects.hash(id);
-//    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 
     @Override
     public String toString() {
