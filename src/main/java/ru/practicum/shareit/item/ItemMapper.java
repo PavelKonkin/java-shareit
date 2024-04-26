@@ -19,11 +19,11 @@ public class ItemMapper {
         this.userMapper = userMapper;
     }
 
-    public List<Item> convertListItemDto(List<ItemDto> list) {
-        return list.stream()
-                .map(this::convertItemDto)
-                .collect(Collectors.toList());
-    }
+//    public List<Item> convertListItemDto(List<ItemDto> list) {
+//        return list.stream()
+//                .map(this::convertItemDto)
+//                .collect(Collectors.toList());
+//    }
 
     public List<ItemDto> convertListItem(List<Item> list) {
         return list.stream()
@@ -39,6 +39,7 @@ public class ItemMapper {
                 .id(itemDto.getId())
                 .available(itemDto.getAvailable())
                 .owner(userMapper.convertUserDto(itemDto.getOwner()))
+                .requestId(itemDto.getRequestId())
                 .build();
     }
 
@@ -50,14 +51,15 @@ public class ItemMapper {
                 .id(item.getId())
                 .available(item.getAvailable())
                 .owner(userMapper.convertUser(item.getOwner()))
+                .requestId(item.getRequestId())
                 .build();
     }
 
-    public List<ItemWithBookingsAndCommentsDto> convertListItemToBookingDto(List<Item> items) {
-        return items.stream()
-                .map(this::convertItemToBookingDto)
-                .collect(Collectors.toList());
-    }
+//    public List<ItemWithBookingsAndCommentsDto> convertListItemToBookingDto(List<Item> items) {
+//        return items.stream()
+//                .map(this::convertItemToBookingDto)
+//                .collect(Collectors.toList());
+//    }
 
     public ItemWithBookingsAndCommentsDto convertItemToBookingDto(Item item) {
 

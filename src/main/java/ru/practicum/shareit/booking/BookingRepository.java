@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,38 +16,38 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     Optional<Booking> getByIdAndBookerIdOrItemOwnerId(int bookingId, int userId);
 
     @EntityGraph(value = "booking.item.user")
-    List<Booking> findAllByBookerId(int bookerId, Sort sort);
+    Page<Booking> findAllByBookerId(int bookerId, Pageable page);
 
     @EntityGraph(value = "booking.item.user")
-    List<Booking> findAllByBookerIdAndStartDateAfter(int bookerId, LocalDateTime currentDate, Sort sort);
+    Page<Booking> findAllByBookerIdAndStartDateAfter(int bookerId, LocalDateTime currentDate, Pageable page);
 
     @EntityGraph(value = "booking.item.user")
-    List<Booking> findAllByBookerIdAndEndDateIsBefore(int bookerId, LocalDateTime currentDate, Sort sort);
+    Page<Booking> findAllByBookerIdAndEndDateIsBefore(int bookerId, LocalDateTime currentDate, Pageable page);
 
     @EntityGraph(value = "booking.item.user")
     @Query(" select b from Booking b where b.booker.id = ?1 and ?2 between b.startDate and b.endDate" +
-            " order by b.startDate desc")
-    List<Booking> findAllByBookerCurrent(int bookerId, LocalDateTime currentDate);
+            " order by b.id")
+    Page<Booking> findAllByBookerCurrent(int bookerId, LocalDateTime currentDate, Pageable page);
 
     @EntityGraph(value = "booking.item.user")
-    List<Booking> findAllByBookerIdAndStatus(int bookerId, BookingState state, Sort sort);
+    Page<Booking> findAllByBookerIdAndStatus(int bookerId, BookingState state, Pageable page);
 
     @EntityGraph(value = "booking.item.user")
-    List<Booking> findAllByItemOwnerId(int ownerId, Sort sort);
+    Page<Booking> findAllByItemOwnerId(int ownerId, Pageable page);
 
     @EntityGraph(value = "booking.item.user")
-    List<Booking> findAllByItemOwnerIdAndStartDateAfter(int ownerId, LocalDateTime currentDate, Sort sort);
+    Page<Booking> findAllByItemOwnerIdAndStartDateAfter(int ownerId, LocalDateTime currentDate, Pageable page);
 
     @EntityGraph(value = "booking.item.user")
-    List<Booking> findAllByItemOwnerIdAndEndDateIsBefore(int ownerId, LocalDateTime currentDate, Sort sort);
+    Page<Booking> findAllByItemOwnerIdAndEndDateIsBefore(int ownerId, LocalDateTime currentDate, Pageable page);
 
     @EntityGraph(value = "booking.item.user")
     @Query(" select b from Booking b where b.item.owner.id = ?1" +
-            " and ?2 between b.startDate and b.endDate order by b.startDate desc")
-    List<Booking> findAllByOwnerCurrent(int ownerId, LocalDateTime currentDate);
+            " and ?2 between b.startDate and b.endDate order by b.id")
+    Page<Booking> findAllByOwnerCurrent(int ownerId, LocalDateTime currentDate, Pageable page);
 
     @EntityGraph(value = "booking.item.user")
-    List<Booking> findAllByItemOwnerIdAndStatus(int ownerId, BookingState bookingState, Sort sort);
+    Page<Booking> findAllByItemOwnerIdAndStatus(int ownerId, BookingState bookingState, Pageable page);
 
     @EntityGraph(value = "booking.item.user")
     List<Booking> findAllByItemId(int itemId);

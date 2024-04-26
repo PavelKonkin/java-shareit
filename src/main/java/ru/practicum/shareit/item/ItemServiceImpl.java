@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
@@ -48,9 +50,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBookingsAndCommentsDto> getAll(int userId) {
+    public List<ItemWithBookingsAndCommentsDto> getAll(int userId, int from, int size) {
         Sort sort = Sort.by("id");
-        List<Item> items = itemRepository.findAllByOwnerId(userId, sort);
+        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size, sort);
+        Page<Item> items = itemRepository.findAllByOwnerId(userId, page);
+
         List<Integer> itemsId = items.stream()
                 .map(Item::getId)
                 .collect(Collectors.toList());
@@ -82,7 +86,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto create(ItemDto itemDto, int userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользоваетля с id " + userId + " не существует"));
+                .orElseThrow(() -> new NotFoundException("Пользователя с id " + userId + " не существует"));
         itemDto.setOwner(userMapper.convertUser(user));
         Item newItem = itemMapper.convertItemDto(itemDto);
         return itemMapper.convertItem(itemRepository.save(newItem));
@@ -91,7 +95,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto update(ItemDto itemDto, int userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользоваетля с id " + userId + " не существует"));
+                .orElseThrow(() -> new NotFoundException("Пользователя с id " + userId + " не существует"));
         itemDto.setOwner(userMapper.convertUser(user));
         Item existentItem = itemRepository.findById(itemDto.getId())
                 .orElseThrow(() -> new NotFoundException("Предмета с id " + itemDto.getId() + " не существует"));
@@ -130,12 +134,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> search(String text) {
+    public List<ItemDto> search(String text, int from, int size) {
         if (text.isBlank()) {
             return Collections.emptyList();
         }
-        List<Item> items = itemRepository.search(text);
-        return itemMapper.convertListItem(items);
+        Sort sort = Sort.by("id");
+        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size, sort);
+        Page<Item> items = itemRepository.search(text, page);
+        return itemMapper.convertListItem(items.toList());
     }
 
     private void setBookingsToItemDto(ItemWithBookingsAndCommentsDto itemWithBookingsDto,

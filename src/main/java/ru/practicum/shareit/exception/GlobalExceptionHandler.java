@@ -21,13 +21,6 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(ex.getMessage());
     }
 
-    @ExceptionHandler(ValidationException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleValidationException(ValidationException ex) {
-        log.info(ex.getMessage());
-        return new ErrorResponse(ex.getMessage());
-    }
-
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(NotFoundException ex) {

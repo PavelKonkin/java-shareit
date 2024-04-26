@@ -19,17 +19,6 @@ public class BookingMapper {
         this.itemMapper = itemMapper;
     }
 
-    public Booking convertDto(BookingDto bookingDto) {
-        return Booking.builder()
-                .id(bookingDto.getId())
-                .startDate(bookingDto.getStart())
-                .endDate(bookingDto.getEnd())
-                .status(BookingState.valueOf(bookingDto.getStatus().toString()))
-                .item(itemMapper.convertItemDto(bookingDto.getItem()))
-                .booker(userMapper.convertUserDto(bookingDto.getBooker()))
-                .build();
-    }
-
     public BookingDto convertBooking(Booking booking) {
         return BookingDto.builder()
                 .id(booking.getId())

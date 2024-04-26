@@ -22,4 +22,5 @@ public class ItemDto {
     @NotNull
     private Boolean available;
     private UserDto owner;
+    private Integer requestId;
 }

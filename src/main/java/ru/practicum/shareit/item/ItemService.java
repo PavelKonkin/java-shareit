@@ -6,7 +6,7 @@ import ru.practicum.shareit.item.dto.ItemWithBookingsAndCommentsDto;
 import java.util.List;
 
 public interface ItemService {
-    List<ItemWithBookingsAndCommentsDto> getAll(int userId);
+    List<ItemWithBookingsAndCommentsDto> getAll(int userId, int from, int size);
 
     ItemDto create(ItemDto itemDto, int userId);
 
@@ -14,5 +14,5 @@ public interface ItemService {
 
     ItemWithBookingsAndCommentsDto get(int itemId, int userId);
 
-    List<ItemDto> search(String text);
+    List<ItemDto> search(String text, int from, int size);
 }

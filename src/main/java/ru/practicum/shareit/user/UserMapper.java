@@ -9,12 +9,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class UserMapper {
-    public List<User> convertListUserDto(List<UserDto> list) {
-        return list.stream()
-                .map(this::convertUserDto)
-                .collect(Collectors.toList());
-    }
-
     public List<UserDto> convertListUser(List<User> list) {
         return list.stream()
                 .map(this::convertUser)

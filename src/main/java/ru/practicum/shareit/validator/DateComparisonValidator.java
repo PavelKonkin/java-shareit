@@ -19,7 +19,7 @@ public class DateComparisonValidator implements ConstraintValidator<DateComparis
         if (startDate == null || endDate == null) {
             return false;
         }
-        // Проверяем, чтобы endDate был после startDate
+
         return endDate.isAfter(startDate);
     }
 }

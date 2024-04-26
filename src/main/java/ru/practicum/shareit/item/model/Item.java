@@ -30,6 +30,8 @@ public class Item {
     private User owner;
     @Column(name = "is_available")
     private Boolean available;
+    @Column(name = "request_id")
+    private Integer requestId;
 
     @Override
     public boolean equals(Object o) {
@@ -37,10 +39,5 @@ public class Item {
         if (o == null || getClass() != o.getClass()) return false;
         Item item = (Item) o;
         return Objects.equals(id, item.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 }

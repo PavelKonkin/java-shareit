@@ -14,6 +14,6 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
     List<Comment> findAllByItemId(int itemId, Sort sort);
 
     @EntityGraph(value = "comment.item.owner")
-    @Query(" select c from Comment  c where c.id in ?1")
+    @Query(" select c from Comment  c where c.item.id in ?1")
     List<Comment> findAllByItemsId(List<Integer> itemsId);
 }
