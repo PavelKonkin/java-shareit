@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -13,8 +14,9 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingsAndCommentsDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.page.CustomPage;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
 
 import javax.transaction.Transactional;
@@ -33,8 +35,6 @@ public class ItemIT {
     @Autowired
     private ItemMapper itemMapper;
     @Autowired
-    private UserMapper userMapper;
-    @Autowired
     private UserRepository userRepository;
     @Autowired
     private BookingRepository bookingRepository;
@@ -44,6 +44,8 @@ public class ItemIT {
     private CommentRepository commentRepository;
     @Autowired
     private CommentMapper commentMapper;
+    @Autowired
+    private ItemRequestRepository itemRequestRepository;
     @Autowired
     private ItemService itemService;
 
@@ -72,7 +74,6 @@ public class ItemIT {
                 .description("test description")
                 .available(true)
                 .owner(user1)
-                .requestId(1)
                 .build();
         itemRepository.save(item);
         booking = Booking.builder()
@@ -94,7 +95,6 @@ public class ItemIT {
                 .available(true)
                 .name("test item 2")
                 .description("test description 2")
-                .requestId(1)
                 .build();
         itemUpdateDto = ItemDto.builder()
                 .id(item.getId())
@@ -105,20 +105,25 @@ public class ItemIT {
 
     @Test
     void getAll_whenSuccessful_thenReturnListOfItemDtos() {
+        Sort sort = Sort.by("id");
+        CustomPage page = new CustomPage(0, 10, sort);
+
         List<ItemWithBookingsAndCommentsDto> actualListOfItemDtos
-                = itemService.getAll(user1.getId(), 0, 10);
+                = itemService.getAll(user1.getId(), page);
 
         assertThat(actualListOfItemDtos, iterableWithSize(1));
         assertThat(actualListOfItemDtos.get(0).getComments(), contains(commentMapper.convertComment(comment)));
         assertThat(actualListOfItemDtos.get(0).getLastBooking(), is(bookingMapper.convertBookingToShortDto(booking)));
         assertThat(actualListOfItemDtos.get(0).getNextBooking(), is(nullValue()));
-        assertThat(actualListOfItemDtos.get(0).getOwner(), is(userMapper.convertUser(user1)));
     }
 
     @Test
     void getAll_whenUserHasNoItems_thenReturnEmptyList() {
+        Sort sort = Sort.by("id");
+        CustomPage page = new CustomPage(0, 10, sort);
+
         List<ItemWithBookingsAndCommentsDto> actualListOfItemDtos
-                = itemService.getAll(user2.getId(), 0, 10);
+                = itemService.getAll(user2.getId(), page);
 
         assertThat(actualListOfItemDtos, emptyIterable());
     }
@@ -147,8 +152,6 @@ public class ItemIT {
 
         assertThat(actualItemDto.getName(), is(itemUpdateDto.getName()));
         assertThat(actualItemDto.getDescription(), is(itemUpdateDto.getDescription()));
-        assertThat(actualItemDto.getOwner().getId(), is(user1.getId()));
-        assertThat(actualItemDto.getRequestId(), is(item.getRequestId()));
     }
 
     @Test
@@ -175,7 +178,6 @@ public class ItemIT {
         ItemWithBookingsAndCommentsDto actualItem = itemService.get(item.getId(), user1.getId());
 
         assertThat(actualItem, notNullValue());
-        assertThat(actualItem.getOwner(), is(userMapper.convertUser(user1)));
         assertThat(actualItem.getLastBooking(), is(bookingMapper.convertBookingToShortDto(booking)));
         assertThat(actualItem.getNextBooking(), nullValue());
         assertThat(actualItem.getComments(), contains(commentMapper.convertComment(comment)));
@@ -186,7 +188,6 @@ public class ItemIT {
         ItemWithBookingsAndCommentsDto actualItem = itemService.get(item.getId(), user2.getId());
 
         assertThat(actualItem, notNullValue());
-        assertThat(actualItem.getOwner(), is(userMapper.convertUser(user1)));
         assertThat(actualItem.getLastBooking(), nullValue());
         assertThat(actualItem.getNextBooking(), nullValue());
         assertThat(actualItem.getComments(), contains(commentMapper.convertComment(comment)));
@@ -201,8 +202,10 @@ public class ItemIT {
     @Test
     void search_whenSuccessful_thenReturnListOfItemDtos() {
         String text = "test";
+        Sort sort = Sort.by("id");
+        CustomPage page = new CustomPage(0, 10, sort);
 
-        List<ItemDto> actualListOfItemDtos = itemService.search(text, 0, 10);
+        List<ItemDto> actualListOfItemDtos = itemService.search(text, page);
 
         assertThat(actualListOfItemDtos, iterableWithSize(1));
         assertThat(actualListOfItemDtos, contains(itemMapper.convertItem(item)));
@@ -211,8 +214,10 @@ public class ItemIT {
     @Test
     void search_whenSearchTextEmpty_thenReturnEmptyList() {
         String text = "";
+        Sort sort = Sort.by("id");
+        CustomPage page = new CustomPage(0, 10, sort);
 
-        List<ItemDto> actualListOfItemDtos = itemService.search(text, 0, 10);
+        List<ItemDto> actualListOfItemDtos = itemService.search(text, page);
 
         assertThat(actualListOfItemDtos, iterableWithSize(0));
     }

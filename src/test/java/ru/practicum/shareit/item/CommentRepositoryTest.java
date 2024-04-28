@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Sort;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -17,7 +16,6 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@Transactional
 @DataJpaTest
 public class CommentRepositoryTest {
     @Autowired
@@ -50,7 +48,6 @@ public class CommentRepositoryTest {
                 .description("test description")
                 .available(true)
                 .owner(user)
-                .requestId(1)
                 .build();
         itemRepository.save(item);
         comment = Comment.builder()

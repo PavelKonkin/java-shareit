@@ -6,8 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -20,8 +20,8 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingsAndCommentsDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.page.CustomPage;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -41,8 +41,6 @@ public class ItemServiceTest {
     @Mock
     private ItemMapper itemMapper;
     @Mock
-    private UserMapper userMapper;
-    @Mock
     private UserRepository userRepository;
     @Mock
     private BookingRepository bookingRepository;
@@ -54,6 +52,9 @@ public class ItemServiceTest {
     private CommentMapper commentMapper;
     @InjectMocks
     private ItemServiceImpl itemService;
+
+    private final Sort sort = Sort.by("id");
+    private final Pageable page = new CustomPage(0, 10, sort);
 
     private ItemDto itemDto;
     private ItemDto updateItemDto;
@@ -134,7 +135,6 @@ public class ItemServiceTest {
         wrongUserDto = userDto.toBuilder().id(66).build();
         savedItemDto = itemDto.toBuilder()
                 .id(savedItem.getId())
-                .owner(userDto)
                 .build();
         booking = Booking.builder()
                 .id(1)
@@ -177,7 +177,6 @@ public class ItemServiceTest {
                 .build();
         itemWithBookingsAndCommentsDto = ItemWithBookingsAndCommentsDto.builder()
                 .id(savedItem.getId())
-                .owner(userDto)
                 .name(savedItem.getName())
                 .description(savedItem.getDescription())
                 .available(savedItem.getAvailable())
@@ -187,7 +186,6 @@ public class ItemServiceTest {
                 .build();
         itemWithBookingsAndCommentsDtoConverted = ItemWithBookingsAndCommentsDto.builder()
                 .id(savedItem.getId())
-                .owner(userDto)
                 .name(savedItem.getName())
                 .description(savedItem.getDescription())
                 .available(savedItem.getAvailable())
@@ -197,7 +195,6 @@ public class ItemServiceTest {
     @Test
     void create_whenSuccessful_thenReturnItemDto() {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(userMapper.convertUser(user)).thenReturn(userDto);
         when(itemMapper.convertItemDto(itemDto)).thenReturn(newItem);
         when(itemRepository.save(newItem)).thenReturn(savedItem);
         when(itemMapper.convertItem(savedItem)).thenReturn(savedItemDto);
@@ -206,7 +203,6 @@ public class ItemServiceTest {
 
         assertThat(savedItemDto, is(actualItemDto));
         verify(userRepository, times(1)).findById(user.getId());
-        verify(userMapper, times(1)).convertUser(user);
         verify(itemMapper, times(1)).convertItemDto(itemDto);
         verify(itemRepository, times(1)).save(newItem);
         verify(itemMapper, times(1)).convertItem(savedItem);
@@ -219,7 +215,6 @@ public class ItemServiceTest {
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.create(itemDto, wrongUserDto.getId()));
 
-        verify(userMapper, never()).convertUser(any(User.class));
         verify(itemMapper, never()).convertItemDto(any(ItemDto.class));
         verify(itemRepository, never()).save(any(Item.class));
         verify(itemMapper, never()).convertItem(any(Item.class));
@@ -231,7 +226,6 @@ public class ItemServiceTest {
     @Test
     void update_whenSuccessful_thenReturnItemDto() {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(userMapper.convertUser(user)).thenReturn(userDto);
         when(itemRepository.findById(updateItemDto.getId())).thenReturn(Optional.of(savedItem));
         when(itemMapper.convertItemDto(updateItemDto)).thenReturn(updateItem);
         when(itemRepository.save(updateItemToSave)).thenReturn(updateItemToSave);
@@ -241,7 +235,6 @@ public class ItemServiceTest {
 
         assertThat(updateItemDto, is(actualItemDto));
         verify(userRepository, times(1)).findById(user.getId());
-        verify(userMapper, times(1)).convertUser(user);
         verify(itemRepository, times(1)).findById(updateItemDto.getId());
         verify(itemMapper, times(1)).convertItemDto(updateItemDto);
         verify(itemRepository, times(1)).save(updateItemToSave);
@@ -256,7 +249,6 @@ public class ItemServiceTest {
                 () -> itemService.update(updateItemDto, wrongUserDto.getId()));
 
         verify(userRepository, times(1)).findById(wrongUserDto.getId());
-        verify(userMapper, never()).convertUser(any(User.class));
         verify(itemRepository, never()).findById(anyInt());
         verify(itemMapper, never()).convertItemDto(any(ItemDto.class));
         verify(itemRepository, never()).save(any(Item.class));
@@ -268,14 +260,12 @@ public class ItemServiceTest {
     @Test
     void update_whenItemNotFound_thenThrownException() {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(userMapper.convertUser(user)).thenReturn(userDto);
         when(itemRepository.findById(wrongUpdateItemDto.getId())).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.update(wrongUpdateItemDto, user.getId()));
 
         verify(userRepository, times(1)).findById(user.getId());
-        verify(userMapper, times(1)).convertUser(user);
         verify(itemRepository, times(1)).findById(wrongUpdateItemDto.getId());
         verify(itemMapper, never()).convertItemDto(any(ItemDto.class));
         verify(itemRepository, never()).save(any(Item.class));
@@ -287,7 +277,6 @@ public class ItemServiceTest {
     @Test
     void update_whenUserNotOwner_thenThrownException() {
         when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
-        when(userMapper.convertUser(user2)).thenReturn(userDto2);
         when(itemRepository.findById(updateItemDto.getId())).thenReturn(Optional.of(savedItem));
         when(itemMapper.convertItemDto(updateItemDto)).thenReturn(updateItem);
 
@@ -295,7 +284,6 @@ public class ItemServiceTest {
                 () -> itemService.update(updateItemDto, user2.getId()));
 
         verify(userRepository, times(1)).findById(user2.getId());
-        verify(userMapper, times(1)).convertUser(user2);
         verify(itemRepository, times(1)).findById(updateItemDto.getId());
         verify(itemMapper, times(1)).convertItemDto(updateItemDto);
         verify(itemRepository, never()).save(any(Item.class));
@@ -329,13 +317,11 @@ public class ItemServiceTest {
 
     @Test
     void search_whenSuccessful_thenReturnListOfItemDtos() {
-        Sort sort = Sort.by("id");
-        PageRequest page = PageRequest.of(0, 10, sort);
         String text = "test";
-        when(itemRepository.search(text, page)).thenReturn(new PageImpl<>(List.of(savedItem)));
+        when(itemRepository.search(text, page)).thenReturn(List.of(savedItem));
         when(itemMapper.convertListItem(List.of(savedItem))).thenReturn(List.of(savedItemDto));
 
-        List<ItemDto> actualItemDtos = itemService.search(text, 0, 10);
+        List<ItemDto> actualItemDtos = itemService.search(text, page);
 
         assertThat(List.of(savedItemDto), is(actualItemDtos));
         verify(itemRepository, times(1)).search(text, page);
@@ -346,7 +332,7 @@ public class ItemServiceTest {
     void search_whenEmptySearchText_thenReturnEmptyList() {
         String text = "";
 
-        List<ItemDto> actualItemDtos = itemService.search(text, 0, 10);
+        List<ItemDto> actualItemDtos = itemService.search(text, page);
 
         assertThat(List.of(), is(actualItemDtos));
         verify(itemRepository, never()).search(anyString(), any(PageRequest.class));
@@ -355,9 +341,7 @@ public class ItemServiceTest {
 
     @Test
     void getAll_whenSuccessful_thenReturnListOfItemWithBookingsAndCommentsDto() {
-        Sort sort = Sort.by("id");
-        PageRequest page = PageRequest.of( 0, 10, sort);
-        when(itemRepository.findAllByOwnerId(user.getId(), page)).thenReturn(new PageImpl<>(List.of(savedItem)));
+        when(itemRepository.findAllByOwnerId(user.getId(), page)).thenReturn(List.of(savedItem));
         when(commentRepository.findAllByItemsId(List.of(savedItem.getId()))).thenReturn(List.of(comment));
         when(bookingRepository.findAllByItemsId(List.of(savedItem.getId()))).thenReturn(List.of(booking, booking2));
         when(itemMapper.convertItemToBookingDto(savedItem)).thenReturn(itemWithBookingsAndCommentsDtoConverted);
@@ -366,7 +350,7 @@ public class ItemServiceTest {
         when(commentMapper.convertComment(comment)).thenReturn(commentDto);
 
         List<ItemWithBookingsAndCommentsDto> actualItemWithBookingsAndCommentsDtos
-                = itemService.getAll(user.getId(), 0, 10);
+                = itemService.getAll(user.getId(), page);
 
         assertThat(List.of(itemWithBookingsAndCommentsDto), is(actualItemWithBookingsAndCommentsDtos));
         verify(itemRepository, times(1)).findAllByOwnerId(user.getId(), page);

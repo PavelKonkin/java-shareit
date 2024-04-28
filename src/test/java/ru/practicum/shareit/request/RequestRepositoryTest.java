@@ -6,10 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -21,7 +19,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@Transactional
 @DataJpaTest
 public class RequestRepositoryTest {
     @Autowired
@@ -116,21 +113,21 @@ public class RequestRepositoryTest {
     void findAllByRequesterIdIsNot_whenSuccessful_thenReturnItemRequestDtoPage() {
         PageRequest page = PageRequest.of(0, 2, sort);
 
-        Page<ItemRequest> actualItemRequestList = itemRequestRepository.findAllByRequesterIdIsNot(testUser2.getId(), page);
+        List<ItemRequest> actualItemRequestList = itemRequestRepository.findAllByRequesterIdIsNot(testUser2.getId(), page);
 
         assertThat(actualItemRequestList, iterableWithSize(1));
         assertThat(actualItemRequestList, contains(itemRequest2));
-        assertThat(actualItemRequestList, instanceOf(Page.class));
+        assertThat(actualItemRequestList, instanceOf(List.class));
     }
 
     @Test
     void findAllByRequesterIdIsNot_whenNoRecords_thenReturnEmptyItemRequestDtoPage() {
         PageRequest page = PageRequest.of(0, 2, sort);
 
-        Page<ItemRequest> actualItemRequestList = itemRequestRepository.findAllByRequesterIdIsNot(testUser1.getId(), page);
+        List<ItemRequest> actualItemRequestList = itemRequestRepository.findAllByRequesterIdIsNot(testUser1.getId(), page);
 
         assertThat(actualItemRequestList, emptyIterable());
-        assertThat(actualItemRequestList, instanceOf(Page.class));
+        assertThat(actualItemRequestList, instanceOf(List.class));
     }
 
     @Test

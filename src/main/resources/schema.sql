@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS items
     is_available BOOLEAN,
     request_id   BIGINT,
     CONSTRAINT pk_items PRIMARY KEY (item_id),
-    CONSTRAINT fk_items_to_users FOREIGN KEY (owner_id) REFERENCES users (user_id)
+    CONSTRAINT fk_items_to_users FOREIGN KEY (owner_id) REFERENCES users (user_id),
+    CONSTRAINT fk_items_to_requests FOREIGN KEY (request_id) REFERENCES requests (request_id)
 );
 CREATE TABLE IF NOT EXISTS bookings
 (

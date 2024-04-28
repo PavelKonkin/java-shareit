@@ -64,7 +64,6 @@ public class CommentIT {
         userRepository.save(user2);
         item = Item.builder()
                 .owner(user)
-                .requestId(1)
                 .name("test item")
                 .description("test description")
                 .available(true)

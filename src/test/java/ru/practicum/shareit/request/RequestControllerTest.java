@@ -1,18 +1,20 @@
 package ru.practicum.shareit.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import ru.practicum.shareit.constant.Constants;
+import ru.practicum.shareit.page.CustomPage;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 
@@ -45,6 +47,8 @@ public class RequestControllerTest {
     private ItemRequestCreateDto requestCreateDto;
     private ItemRequestCreateDto noDescriptionRequestCreateDto;
     private ItemRequestDto itemRequestDto;
+    private final Sort sort = Sort.by("created");
+    private final Pageable page = new CustomPage(0, 10, sort);
 
     @BeforeEach
     void setup() {
@@ -64,8 +68,7 @@ public class RequestControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void create_whenSuccessful_thenReturnItemRequestDto() {
+    void create_whenSuccessful_thenReturnItemRequestDto() throws Exception {
         when(itemRequestService.create(requestCreateDto))
                 .thenReturn(itemRequestDto);
 
@@ -83,8 +86,7 @@ public class RequestControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void create_whenNoUserHeader_thenThrownException() {
+    void create_whenNoUserHeader_thenThrownException() throws Exception {
         mvc.perform(post("/requests")
                         .content(mapper.writeValueAsString(requestCreateDto))
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -97,8 +99,7 @@ public class RequestControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void create_whenNoRequestDescription_thenThrownException() {
+    void create_whenNoRequestDescription_thenThrownException() throws Exception {
         mvc.perform(post("/requests")
                         .content(mapper.writeValueAsString(noDescriptionRequestCreateDto))
                         .header(Constants.USER_HEADER, 1)
@@ -113,9 +114,8 @@ public class RequestControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void getAllOwn_whenSuccessful_thenReturnItemRequestDtoList() {
-        when(itemRequestService.getAllOwn(1))
+    void getAllOwn_whenSuccessful_thenReturnItemRequestDtoList() throws Exception {
+        when(itemRequestService.getAllOwn(1, sort))
                 .thenReturn(List.of(itemRequestDto));
 
         mvc.perform(get("/requests")
@@ -128,12 +128,11 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$.[0].description", is(itemRequestDto.getDescription())))
                 .andExpect(jsonPath("$.[0].created", equalTo(itemRequestDto.getCreated().toString())))
                 .andExpect(jsonPath("$.[0].items", nullValue()));
-        verify(itemRequestService, times(1)).getAllOwn(1);
+        verify(itemRequestService, times(1)).getAllOwn(1, sort);
     }
 
     @Test
-    @SneakyThrows
-    void getAllOwn_whenNoUserHeader_thenThrownException() {
+    void getAllOwn_whenNoUserHeader_thenThrownException() throws Exception {
         mvc.perform(get("/requests")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -141,16 +140,15 @@ public class RequestControllerTest {
                 .andExpect(status().is5xxServerError())
                 .andExpect(result -> assertInstanceOf(MissingRequestHeaderException.class,
                         result.getResolvedException()));
-        verify(itemRequestService, never()).getAllOwn(anyInt());
+        verify(itemRequestService, never()).getAllOwn(anyInt(), any());
     }
 
     @Test
-    @SneakyThrows
-    void getAll_whenSuccessful_thenReturnItemRequestDtoList() {
-        when(itemRequestService.getAll(2, 0, 2))
+    void getAll_whenSuccessful_thenReturnItemRequestDtoList() throws Exception {
+        when(itemRequestService.getAll(2, page))
                 .thenReturn(List.of(itemRequestDto));
 
-        mvc.perform(get("/requests/all?from=0&size=2")
+        mvc.perform(get("/requests/all?from=0&size=10")
                         .header(Constants.USER_HEADER, 2)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -160,13 +158,12 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$.[0].description", is(itemRequestDto.getDescription())))
                 .andExpect(jsonPath("$.[0].created", equalTo(itemRequestDto.getCreated().toString())))
                 .andExpect(jsonPath("$.[0].items", nullValue()));
-        verify(itemRequestService, times(1)).getAll(2, 0, 2);
+        verify(itemRequestService, times(1)).getAll(2, page);
     }
 
     @Test
-    @SneakyThrows
-    void getAll_whenRequestWithoutFromAndSize_thenReturnItemRequestDtoListWithDefaultParams() {
-        when(itemRequestService.getAll(2, 0, 10))
+    void getAll_whenRequestWithoutFromAndSize_thenReturnItemRequestDtoListWithDefaultParams() throws Exception {
+        when(itemRequestService.getAll(2, page))
                 .thenReturn(List.of(itemRequestDto));
 
         mvc.perform(get("/requests/all")
@@ -179,28 +176,26 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$.[0].description", is(itemRequestDto.getDescription())))
                 .andExpect(jsonPath("$.[0].created", equalTo(itemRequestDto.getCreated().toString())))
                 .andExpect(jsonPath("$.[0].items", nullValue()));
-        verify(itemRequestService, times(1)).getAll(2, 0, 10);
+        verify(itemRequestService, times(1)).getAll(2, page);
     }
 
     @Test
-    @SneakyThrows
-    void getAll_whenNoRecordsForUser_thenReturnEmptyItemRequestDtoList() {
-        when(itemRequestService.getAll(1, 0, 2))
+    void getAll_whenNoRecordsForUser_thenReturnEmptyItemRequestDtoList() throws Exception {
+        when(itemRequestService.getAll(1, page))
                 .thenReturn(List.of());
 
-        mvc.perform(get("/requests/all?from=0&size=2")
+        mvc.perform(get("/requests/all?from=0&size=10")
                         .header(Constants.USER_HEADER, 1)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", emptyIterable()));
-        verify(itemRequestService, times(1)).getAll(1, 0, 2);
+        verify(itemRequestService, times(1)).getAll(1, page);
     }
 
     @Test
-    @SneakyThrows
-    void getAll_whenNoUserHeader_thenThrownException() {
+    void getAll_whenNoUserHeader_thenThrownException() throws Exception {
         mvc.perform(get("/requests/all?from=0&size=2")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -208,12 +203,11 @@ public class RequestControllerTest {
                 .andExpect(status().is5xxServerError())
                 .andExpect(result -> assertInstanceOf(MissingRequestHeaderException.class,
                         result.getResolvedException()));
-        verify(itemRequestService, never()).getAll(anyInt(), anyInt(), anyInt());
+        verify(itemRequestService, never()).getAll(anyInt(), any());
     }
 
     @Test
-    @SneakyThrows
-    void getAll_whenFromParamLessThan0_thenThrownException() {
+    void getAll_whenFromParamLessThan0_thenThrownException() throws Exception {
         mvc.perform(get("/requests/all?from=-1&size=2")
                         .header(Constants.USER_HEADER, 1)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -222,12 +216,11 @@ public class RequestControllerTest {
                 .andExpect(status().is5xxServerError())
                 .andExpect(result -> assertInstanceOf(ConstraintViolationException.class,
                         result.getResolvedException()));
-        verify(itemRequestService, never()).getAll(anyInt(), anyInt(), anyInt());
+        verify(itemRequestService, never()).getAll(anyInt(), any());
     }
 
     @Test
-    @SneakyThrows
-    void getAll_whenSizeParamLessThan1_thenThrownException() {
+    void getAll_whenSizeParamLessThan1_thenThrownException() throws Exception {
         mvc.perform(get("/requests/all?from=0&size=0")
                         .header(Constants.USER_HEADER, 1)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -236,12 +229,11 @@ public class RequestControllerTest {
                 .andExpect(status().is5xxServerError())
                 .andExpect(result -> assertInstanceOf(ConstraintViolationException.class,
                         result.getResolvedException()));
-        verify(itemRequestService, never()).getAll(anyInt(), anyInt(), anyInt());
+        verify(itemRequestService, never()).getAll(anyInt(), any());
     }
 
     @Test
-    @SneakyThrows
-    void get_whenSuccessful_thenReturnItemRequestDto() {
+    void get_whenSuccessful_thenReturnItemRequestDto() throws Exception {
         when(itemRequestService.get(1, 1))
                 .thenReturn(itemRequestDto);
 
@@ -259,28 +251,13 @@ public class RequestControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void get_whenNoUserHeader_thenThrownException() {
+    void get_whenNoUserHeader_thenThrownException() throws Exception {
         mvc.perform(get("/requests/1")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is5xxServerError())
                 .andExpect(result -> assertInstanceOf(MissingRequestHeaderException.class,
-                        result.getResolvedException()));
-        verify(itemRequestService, never()).get(anyInt(), anyInt());
-    }
-
-    @Test
-    @SneakyThrows
-    void get_whenRequestIdNegative_thenThrownException() {
-        mvc.perform(get("/requests/-1")
-                        .header(Constants.USER_HEADER, 1)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is5xxServerError())
-                .andExpect(result -> assertInstanceOf(ConstraintViolationException.class,
                         result.getResolvedException()));
         verify(itemRequestService, never()).get(anyInt(), anyInt());
     }

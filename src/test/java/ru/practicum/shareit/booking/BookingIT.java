@@ -4,12 +4,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingStateDto;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.page.CustomPage;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -42,6 +45,8 @@ public class BookingIT {
     private BookingCreateDto bookingCreateDto;
     private Booking booking;
     private Booking bookingApproved;
+    private final Sort sort = Sort.by("startDate").descending();
+    private final Pageable page = new CustomPage(0, 10, sort);
 
     @BeforeEach
     void setup() {
@@ -59,7 +64,6 @@ public class BookingIT {
                 .name("test item")
                 .description("test description")
                 .owner(user)
-                .requestId(1)
                 .available(true)
                 .build();
         itemRepository.save(item);
@@ -67,7 +71,6 @@ public class BookingIT {
                 .name("test item2")
                 .description("test description2")
                 .owner(user)
-                .requestId(1)
                 .available(false)
                 .build();
         itemRepository.save(item2);
@@ -203,7 +206,7 @@ public class BookingIT {
     @Test
     void getAllForBooker_whenWaiting_thenReturnListOfBookingDto() {
         List<BookingDto> actualListOfBookingsDto
-                = bookingService.getAllForBooker(user2.getId(), BookingStateDto.WAITING, 0, 10);
+                = bookingService.getAllForBooker(user2.getId(), BookingStateDto.WAITING, page);
 
         assertThat(actualListOfBookingsDto, iterableWithSize(1));
         assertThat(actualListOfBookingsDto.get(0).getId(), is(booking.getId()));
@@ -217,13 +220,13 @@ public class BookingIT {
         int wrongUserId = 66;
 
         assertThrows(NotFoundException.class,
-                () -> bookingService.getAllForBooker(wrongUserId, BookingStateDto.WAITING, 0, 10));
+                () -> bookingService.getAllForBooker(wrongUserId, BookingStateDto.WAITING, page));
     }
 
     @Test
     void getAllForOwner_whenWaiting_thenReturnListOfBookingDto() {
         List<BookingDto> actualListOfBookingsDto
-                = bookingService.getAllForOwner(user.getId(), BookingStateDto.WAITING, 0, 10);
+                = bookingService.getAllForOwner(user.getId(), BookingStateDto.WAITING, page);
 
         assertThat(actualListOfBookingsDto, iterableWithSize(1));
         assertThat(actualListOfBookingsDto.get(0).getId(), is(booking.getId()));
@@ -237,7 +240,7 @@ public class BookingIT {
         int wrongUserId = Integer.MAX_VALUE;
 
         assertThrows(NotFoundException.class,
-                () -> bookingService.getAllForOwner(wrongUserId, BookingStateDto.WAITING, 0, 10));
+                () -> bookingService.getAllForOwner(wrongUserId, BookingStateDto.WAITING, page));
     }
 
 

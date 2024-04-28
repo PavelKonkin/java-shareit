@@ -1,8 +1,7 @@
 package ru.practicum.shareit.request;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -52,20 +51,16 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDto> getAllOwn(int userId) {
+    public List<ItemRequestDto> getAllOwn(int userId, Sort sort) {
         getAndCheckUserExistence(userId);
-        Sort sort = Sort.by("created");
         List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequesterId(userId, sort);
         return composeItemRequestDtoList(itemRequests);
     }
 
     @Override
-    public List<ItemRequestDto> getAll(int userId, int from, int size) {
+    public List<ItemRequestDto> getAll(int userId, Pageable page) {
         getAndCheckUserExistence(userId);
-        Sort sort = Sort.by("created");
-        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size, sort);
-        Page<ItemRequest> itemRequests = itemRequestRepository.findAllByRequesterIdIsNot(userId, page);
-        List<ItemRequest> itemRequestList = itemRequests.toList();
+        List<ItemRequest> itemRequestList = itemRequestRepository.findAllByRequesterIdIsNot(userId, page);
         return composeItemRequestDtoList(itemRequestList);
     }
 
@@ -95,7 +90,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .collect(Collectors.toList());
         List<Item> items = itemRepository.findAllByRequestsId(requestsId);
         Map<Integer, List<Item>> itemsByRequest = items.stream()
-                .collect(Collectors.groupingBy(Item::getRequestId));
+                .collect(Collectors.groupingBy(el -> el.getRequest().getId()));
 
         List<ItemRequestDto> itemsRequestsDto = new ArrayList<>();
         for (ItemRequest itemRequest : itemRequests) {

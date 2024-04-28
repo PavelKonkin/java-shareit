@@ -1,12 +1,13 @@
 package ru.practicum.shareit.booking;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,6 +17,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingStateDto;
 import ru.practicum.shareit.constant.Constants;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.page.CustomPage;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.ConstraintViolationException;
@@ -46,6 +48,8 @@ public class BookingControllerTest {
     private UserDto userDto;
     private UserDto userDto2;
     private ItemDto itemDto;
+    private final Sort sort = Sort.by("startDate").descending();
+    private final Pageable page = new CustomPage(0, 10, sort);
 
 
     @BeforeEach
@@ -64,7 +68,6 @@ public class BookingControllerTest {
                 .id(1)
                 .name("test item")
                 .description("test description")
-                .owner(userDto)
                 .available(true)
                 .requestId(1)
                 .build();
@@ -93,8 +96,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void create_whenSuccessful_thenReturnBookingDto() {
+    void create_whenSuccessful_thenReturnBookingDto() throws Exception {
         when(bookingService.create(bookingCreateDto)).thenReturn(bookingDto);
 
         mvc.perform(post("/bookings")
@@ -115,8 +117,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void create_whenStartLaterThanEnd_thenThrownException() {
+    void create_whenStartLaterThanEnd_thenThrownException() throws Exception {
         mvc.perform(post("/bookings")
                         .content(mapper.writeValueAsString(wrongBookingCreateDto))
                         .header(Constants.USER_HEADER, userDto2.getId())
@@ -131,8 +132,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void confirmReject_whenSuccessful_thenReturnConfirmedBookingDto() {
+    void confirmReject_whenSuccessful_thenReturnConfirmedBookingDto() throws Exception {
         bookingDto.setStatus(BookingStateDto.APPROVED);
         when(bookingService.confirmReject(userDto.getId(), bookingDto.getId(), "true")).thenReturn(bookingDto);
 
@@ -153,8 +153,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void confirmReject_whenNoApprovedRequestParam_thenThrownException() {
+    void confirmReject_whenNoApprovedRequestParam_thenThrownException() throws Exception {
         mvc.perform(patch("/bookings/" + bookingDto.getId())
                         .header(Constants.USER_HEADER, userDto.getId())
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -168,8 +167,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void get_whenSuccessful_thenReturnBookingDto() {
+    void get_whenSuccessful_thenReturnBookingDto() throws Exception {
         when(bookingService.get(userDto.getId(), bookingDto.getId())).thenReturn(bookingDto);
 
         mvc.perform(get("/bookings/" + bookingDto.getId())
@@ -188,24 +186,9 @@ public class BookingControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void get_whenNegativeBookingIdPathVar_thenReturnBookingDto() {
-        mvc.perform(get("/bookings/-1")
-                        .header(Constants.USER_HEADER, userDto.getId())
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is5xxServerError())
-                .andExpect(result -> assertInstanceOf(ConstraintViolationException.class,
-                        result.getResolvedException()));
-        verify(bookingService, never()).get(anyInt(), anyInt());
-    }
-
-    @Test
-    @SneakyThrows
-    void getAll_whenSuccessful_thenReturnListOfBookingDtos() {
+    void getAll_whenSuccessful_thenReturnListOfBookingDtos() throws Exception {
         when(bookingService
-                .getAllForBooker(userDto2.getId(), BookingStateDto.WAITING, 0, 10))
+                .getAllForBooker(userDto2.getId(), BookingStateDto.WAITING, page))
                 .thenReturn(List.of(bookingDto));
 
         mvc.perform(get("/bookings?state=WAITING&from=0&size=10")
@@ -221,12 +204,11 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].end", is(bookingDto.getEnd().toString())))
                 .andExpect(jsonPath("$.[0].status").value(BookingStateDto.WAITING.toString()));
         verify(bookingService, times(1))
-                .getAllForBooker(userDto2.getId(), BookingStateDto.WAITING, 0, 10);
+                .getAllForBooker(userDto2.getId(), BookingStateDto.WAITING, page);
     }
 
     @Test
-    @SneakyThrows
-    void getAll_whenWrongStateRequestParam_thenThrownException() {
+    void getAll_whenWrongStateRequestParam_thenThrownException() throws Exception {
         mvc.perform(get("/bookings?state=waiting&from=0&size=10")
                         .header(Constants.USER_HEADER, userDto2.getId())
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -236,14 +218,13 @@ public class BookingControllerTest {
                 .andExpect(result -> assertInstanceOf(IllegalArgumentException.class,
                         result.getResolvedException()));
         verify(bookingService, never())
-                .getAllForBooker(anyInt(), any(BookingStateDto.class), anyInt(), anyInt());
+                .getAllForBooker(anyInt(), any(BookingStateDto.class), any(Pageable.class));
     }
 
     @Test
-    @SneakyThrows
-    void getAllByOwner_whenSuccessful_thenReturnListOfBookingDtos() {
+    void getAllByOwner_whenSuccessful_thenReturnListOfBookingDtos() throws Exception {
         when(bookingService
-                .getAllForOwner(userDto.getId(), BookingStateDto.WAITING, 0, 10))
+                .getAllForOwner(userDto.getId(), BookingStateDto.WAITING, page))
                 .thenReturn(List.of(bookingDto));
 
         mvc.perform(get("/bookings/owner?state=WAITING&from=0&size=10")
@@ -259,12 +240,11 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].end", is(bookingDto.getEnd().toString())))
                 .andExpect(jsonPath("$.[0].status").value(BookingStateDto.WAITING.toString()));
         verify(bookingService, times(1))
-                .getAllForOwner(userDto.getId(), BookingStateDto.WAITING, 0, 10);
+                .getAllForOwner(userDto.getId(), BookingStateDto.WAITING, page);
     }
 
     @Test
-    @SneakyThrows
-    void getAllByOwner_whenFromRequestParamNegative_thenThrownException() {
+    void getAllByOwner_whenFromRequestParamNegative_thenThrownException() throws Exception {
         mvc.perform(get("/bookings/owner?state=WAITING&from=-1&size=10")
                         .header(Constants.USER_HEADER, userDto.getId())
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -274,6 +254,6 @@ public class BookingControllerTest {
                 .andExpect(result -> assertInstanceOf(ConstraintViolationException.class,
                         result.getResolvedException()));
         verify(bookingService, never())
-                .getAllForOwner(anyInt(), any(BookingStateDto.class), anyInt(), anyInt());
+                .getAllForOwner(anyInt(), any(BookingStateDto.class), any(Pageable.class));
     }
 }

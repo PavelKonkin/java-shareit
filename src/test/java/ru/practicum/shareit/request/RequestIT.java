@@ -4,7 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.page.CustomPage;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.User;
@@ -39,6 +42,8 @@ public class RequestIT {
     private ItemRequestDto itemRequestDto;
     private ItemRequestDto wrongItemRequestDto;
     private ItemRequestDto itemRequestDtoWithItems;
+    private final Sort sort = Sort.by("created");
+    private final Pageable page = new CustomPage(0, 10, sort);
 
     @BeforeEach
     void setup() {
@@ -106,7 +111,7 @@ public class RequestIT {
 
     @Test
     void getAllOwn_whenSuccessful_thenReturnListOfItemRequestDto() {
-        List<ItemRequestDto> itemRequestDtoList = itemRequestService.getAllOwn(testUserDto.getId());
+        List<ItemRequestDto> itemRequestDtoList = itemRequestService.getAllOwn(testUserDto.getId(), sort);
 
         assertThat(itemRequestDtoList, iterableWithSize(1));
         assertThat(itemRequestDtoList, contains(itemRequestDtoWithItems));
@@ -114,7 +119,7 @@ public class RequestIT {
 
     @Test
     void getAllOwn_whenUserNotFound_thenThrownException() {
-        assertThrows(NotFoundException.class, () -> itemRequestService.getAllOwn(testWrongUserDto.getId()));
+        assertThrows(NotFoundException.class, () -> itemRequestService.getAllOwn(testWrongUserDto.getId(), sort));
     }
 
     @Test
@@ -122,7 +127,7 @@ public class RequestIT {
         List<ItemRequestDto> expectedItemRequestListDtos = List.of(itemRequestDtoWithItems);
 
         List<ItemRequestDto> actualItemRequestListDtos = itemRequestService.getAll(testUserDto2.getId(),
-                0,2);
+                page);
 
         assertThat(actualItemRequestListDtos, iterableWithSize(1));
         assertThat(actualItemRequestListDtos, contains(itemRequestDtoWithItems));
@@ -131,7 +136,7 @@ public class RequestIT {
 
     @Test
     void getAll_whenUserNotFound_thenThrownException() {
-        assertThrows(NotFoundException.class, () -> itemRequestService.getAll(testWrongUserDto.getId(), 0,2));
+        assertThrows(NotFoundException.class, () -> itemRequestService.getAll(testWrongUserDto.getId(), page));
     }
 
     @Test

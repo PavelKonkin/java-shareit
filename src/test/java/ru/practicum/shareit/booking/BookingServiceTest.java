@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
@@ -52,7 +51,7 @@ public class BookingServiceTest {
     private User user2;
     private UserDto userDto;
     private UserDto userDto2;
-    private final Sort sort = Sort.by("id").descending();
+    private final Sort sort = Sort.by("startDate").descending();
     private final PageRequest page = PageRequest.of(0, 10, sort);
 
     @BeforeEach
@@ -83,15 +82,12 @@ public class BookingServiceTest {
                 .description("test description")
                 .owner(user)
                 .available(true)
-                .requestId(1)
                 .build();
         itemDto = ItemDto.builder()
                 .id(item.getId())
                 .available(item.getAvailable())
                 .name(item.getName())
                 .description(item.getDescription())
-                .requestId(item.getRequestId())
-                .owner(userDto)
                 .build();
         bookingCreateDto = BookingCreateDto.builder()
                 .itemId(item.getId())
@@ -334,11 +330,11 @@ public class BookingServiceTest {
     void getAllForBooker_whenWaitingState_thenReturnListOfBookingDto() {
         when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
         when(bookingRepository.findAllByBookerIdAndStatus(user2.getId(), BookingState.WAITING, page))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForBooker(user2.getId(), BookingStateDto.WAITING, 0, 10);
+                .getAllForBooker(user2.getId(), BookingStateDto.WAITING, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user2.getId());
@@ -351,11 +347,11 @@ public class BookingServiceTest {
     void getAllForBooker_whenAllState_thenReturnListOfBookingDto() {
         when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
         when(bookingRepository.findAllByBookerId(user2.getId(), page))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForBooker(user2.getId(), BookingStateDto.ALL, 0, 10);
+                .getAllForBooker(user2.getId(), BookingStateDto.ALL, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user2.getId());
@@ -371,11 +367,11 @@ public class BookingServiceTest {
         when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
         when(bookingRepository
                 .findAllByBookerIdAndStartDateAfter(anyInt(), any(LocalDateTime.class), any(PageRequest.class)))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForBooker(user2.getId(), BookingStateDto.FUTURE, 0, 10);
+                .getAllForBooker(user2.getId(), BookingStateDto.FUTURE, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user2.getId());
@@ -391,11 +387,11 @@ public class BookingServiceTest {
         when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
         when(bookingRepository
                 .findAllByBookerIdAndEndDateIsBefore(anyInt(), any(LocalDateTime.class), any(PageRequest.class)))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForBooker(user2.getId(), BookingStateDto.PAST, 0, 10);
+                .getAllForBooker(user2.getId(), BookingStateDto.PAST, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user2.getId());
@@ -410,11 +406,11 @@ public class BookingServiceTest {
         when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
         when(bookingRepository
                 .findAllByBookerIdAndStatus(user2.getId(), BookingState.REJECTED, page))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForBooker(user2.getId(), BookingStateDto.REJECTED, 0, 10);
+                .getAllForBooker(user2.getId(), BookingStateDto.REJECTED, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user2.getId());
@@ -429,11 +425,11 @@ public class BookingServiceTest {
         when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
         when(bookingRepository
                 .findAllByBookerIdAndStatus(user2.getId(), BookingState.APPROVED, page))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForBooker(user2.getId(), BookingStateDto.APPROVED, 0, 10);
+                .getAllForBooker(user2.getId(), BookingStateDto.APPROVED, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user2.getId());
@@ -447,11 +443,11 @@ public class BookingServiceTest {
         when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
         when(bookingRepository
                 .findAllByBookerCurrent(anyInt(), any(LocalDateTime.class), any(PageRequest.class)))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForBooker(user2.getId(), BookingStateDto.CURRENT, 0, 10);
+                .getAllForBooker(user2.getId(), BookingStateDto.CURRENT, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user2.getId());
@@ -467,7 +463,7 @@ public class BookingServiceTest {
 
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
-                () -> bookingService.getAllForBooker(wrongUserId, BookingStateDto.WAITING, 0, 10)
+                () -> bookingService.getAllForBooker(wrongUserId, BookingStateDto.WAITING, page)
         );
         assertThat(exception.getMessage(), is("Пользователя с id "
                 + wrongUserId + " не существует"));
@@ -480,11 +476,11 @@ public class BookingServiceTest {
     void getAllForOwner_whenWaitingState_thenReturnListOfBookingDto() {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(bookingRepository.findAllByItemOwnerIdAndStatus(user.getId(), BookingState.WAITING, page))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForOwner(user.getId(), BookingStateDto.WAITING, 0, 10);
+                .getAllForOwner(user.getId(), BookingStateDto.WAITING, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user.getId());
@@ -497,11 +493,11 @@ public class BookingServiceTest {
     void getAllForOwner_whenAllState_thenReturnListOfBookingDto() {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(bookingRepository.findAllByItemOwnerId(user.getId(), page))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForOwner(user.getId(), BookingStateDto.ALL, 0, 10);
+                .getAllForOwner(user.getId(), BookingStateDto.ALL, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user.getId());
@@ -515,11 +511,11 @@ public class BookingServiceTest {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(bookingRepository
                 .findAllByItemOwnerIdAndStartDateAfter(anyInt(), any(LocalDateTime.class), any(PageRequest.class)))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForOwner(user.getId(), BookingStateDto.FUTURE, 0, 10);
+                .getAllForOwner(user.getId(), BookingStateDto.FUTURE, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user.getId());
@@ -533,11 +529,11 @@ public class BookingServiceTest {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(bookingRepository
                 .findAllByItemOwnerIdAndEndDateIsBefore(anyInt(), any(LocalDateTime.class), any(PageRequest.class)))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForOwner(user.getId(), BookingStateDto.PAST, 0, 10);
+                .getAllForOwner(user.getId(), BookingStateDto.PAST, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user.getId());
@@ -551,11 +547,11 @@ public class BookingServiceTest {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(bookingRepository
                 .findAllByItemOwnerIdAndStatus(user.getId(), BookingState.REJECTED, page))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForOwner(user.getId(), BookingStateDto.REJECTED, 0, 10);
+                .getAllForOwner(user.getId(), BookingStateDto.REJECTED, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user.getId());
@@ -569,11 +565,11 @@ public class BookingServiceTest {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(bookingRepository
                 .findAllByItemOwnerIdAndStatus(user.getId(), BookingState.APPROVED, page))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForOwner(user.getId(), BookingStateDto.APPROVED, 0, 10);
+                .getAllForOwner(user.getId(), BookingStateDto.APPROVED, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user.getId());
@@ -587,11 +583,11 @@ public class BookingServiceTest {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(bookingRepository
                 .findAllByOwnerCurrent(anyInt(), any(LocalDateTime.class), any(PageRequest.class)))
-                .thenReturn(new PageImpl<>(List.of(bookingSaved)));
+                .thenReturn(List.of(bookingSaved));
         when(bookingMapper.convertBooking(bookingSaved)).thenReturn(bookingDto);
 
         List<BookingDto> actualListOfBookingDto = bookingService
-                .getAllForOwner(user.getId(), BookingStateDto.CURRENT, 0, 10);
+                .getAllForOwner(user.getId(), BookingStateDto.CURRENT, page);
 
         assertThat(List.of(bookingDto), is(actualListOfBookingDto));
         verify(userRepository, times(1)).findById(user.getId());
@@ -607,7 +603,7 @@ public class BookingServiceTest {
 
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
-                () -> bookingService.getAllForOwner(wrongUserId, BookingStateDto.WAITING, 0, 10)
+                () -> bookingService.getAllForOwner(wrongUserId, BookingStateDto.WAITING, page)
         );
         assertThat(exception.getMessage(), is("Пользователя с id "
                 + wrongUserId + " не существует"));

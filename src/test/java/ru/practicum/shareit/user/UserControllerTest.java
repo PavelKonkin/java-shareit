@@ -1,7 +1,6 @@
 package ru.practicum.shareit.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,8 +71,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void get_whenSuccessful_thenReturnUserDto() {
+    void get_whenSuccessful_thenReturnUserDto() throws Exception {
         when(userService.get(userDto.getId())).thenReturn(userDto);
 
         mvc.perform(get("/users/1")
@@ -88,8 +86,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void get_whenUserNotFound_thenThrownException() {
+    void get_whenUserNotFound_thenThrownException() throws Exception {
         when(userService.get(wrongUserDto.getId()))
                 .thenThrow(new NotFoundException("Пользователя с id " + wrongUserDto.getId() + " не существует"));
 
@@ -104,8 +101,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void create_whenSuccessful_thenReturnUserDto() {
+    void create_whenSuccessful_thenReturnUserDto() throws Exception {
         when(userService.create(userCreateDto)).thenReturn(userDto);
 
         mvc.perform(post("/users")
@@ -121,8 +117,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void create_whenWrongEmail_thenThrownException() {
+    void create_whenWrongEmail_thenThrownException() throws Exception {
         mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(wrongUserCreateDto))
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -135,8 +130,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void getAll_whenSuccessful_thenReturnListOfUserDtos() {
+    void getAll_whenSuccessful_thenReturnListOfUserDtos() throws Exception {
         when(userService.getAll()).thenReturn(List.of(userDto));
 
         mvc.perform(get("/users")
@@ -151,8 +145,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void update_whenSuccessful_thenReturnUserDto() {
+    void update_whenSuccessful_thenReturnUserDto() throws Exception {
         when(userService.update(userUpdateDto)).thenReturn(userUpdateDto);
 
         mvc.perform(patch("/users/1")
@@ -168,8 +161,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void update_whenWrongEmail_thenThrownException() {
+    void update_whenWrongEmail_thenThrownException() throws Exception {
         mvc.perform(patch("/users/1")
                         .content(mapper.writeValueAsString(wrongUserUpdateDto))
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -182,8 +174,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void delete_whenSuccessful_thenOkStatus() {
+    void delete_whenSuccessful_thenOkStatus() throws Exception {
         doNothing().when(userService).delete(1);
         mvc.perform(delete("/users/1")
                 .characterEncoding(StandardCharsets.UTF_8)
@@ -194,8 +185,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @SneakyThrows
-    void delete_whenUserNotFound_thenThrownException() {
+    void delete_whenUserNotFound_thenThrownException() throws Exception {
         doThrow(new NotFoundException("")).when(userService).delete(2);
         mvc.perform(delete("/users/2")
                         .characterEncoding(StandardCharsets.UTF_8)

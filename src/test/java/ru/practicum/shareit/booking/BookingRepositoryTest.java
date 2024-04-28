@@ -4,10 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -20,7 +18,6 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@Transactional
 @DataJpaTest
 public class BookingRepositoryTest {
     @Autowired
@@ -54,7 +51,6 @@ public class BookingRepositoryTest {
         item = Item.builder()
                 .available(true)
                 .owner(user)
-                .requestId(1)
                 .name("test item")
                 .description("test description")
                 .build();
@@ -62,7 +58,6 @@ public class BookingRepositoryTest {
         item2 = Item.builder()
                 .available(true)
                 .owner(user2)
-                .requestId(1)
                 .name("test item2")
                 .description("test description2")
                 .build();
@@ -95,81 +90,81 @@ public class BookingRepositoryTest {
 
     @Test
     void findAllByBookerId_whenFound_thenReturnPageOfBookings() {
-        Page<Booking> actualPageOfBookings = bookingRepository.findAllByBookerId(user2.getId(), page);
+        List<Booking> actualPageOfBookings = bookingRepository.findAllByBookerId(user2.getId(), page);
 
-        assertThat(List.of(booking), is(actualPageOfBookings.toList()));
+        assertThat(List.of(booking), is(actualPageOfBookings));
     }
 
     @Test
     void findAllByBookerIdAndStartDateAfter_whenFound_thenReturnOptionalOfBooking() {
-        Page<Booking> actualPageOfBookings = bookingRepository
+        List<Booking> actualPageOfBookings = bookingRepository
                 .findAllByBookerIdAndStartDateAfter(user2.getId(), LocalDateTime.now().minusDays(2), page);
 
-        assertThat(List.of(booking), is(actualPageOfBookings.toList()));
+        assertThat(List.of(booking), is(actualPageOfBookings));
     }
 
     @Test
     void findAllByBookerIdAndEndDateIsBefore_whenFound_thenReturnOptionalOfBooking() {
-        Page<Booking> actualPageOfBookings = bookingRepository
+        List<Booking> actualPageOfBookings = bookingRepository
                 .findAllByBookerIdAndEndDateIsBefore(user2.getId(), LocalDateTime.now().plusDays(2), page);
 
-        assertThat(List.of(booking), is(actualPageOfBookings.toList()));
+        assertThat(List.of(booking), is(actualPageOfBookings));
     }
 
     @Test
     void findAllByBookerCurrent_whenFound_thenReturnOptionalOfBooking() {
-        Page<Booking> actualPageOfBookings = bookingRepository
+        List<Booking> actualPageOfBookings = bookingRepository
                 .findAllByBookerCurrent(user2.getId(), LocalDateTime.now(), page);
 
-        assertThat(List.of(booking), is(actualPageOfBookings.toList()));
+        assertThat(List.of(booking), is(actualPageOfBookings));
     }
 
     @Test
     void findAllByBookerIdAndStatus_whenFound_thenReturnOptionalOfBooking() {
-        Page<Booking> actualPageOfBookings = bookingRepository
+        List<Booking> actualPageOfBookings = bookingRepository
                 .findAllByBookerIdAndStatus(user2.getId(), BookingState.APPROVED, page);
 
-        assertThat(List.of(booking), is(actualPageOfBookings.toList()));
+        assertThat(List.of(booking), is(actualPageOfBookings));
     }
 
     @Test
     void findAllByItemOwnerId_whenFound_thenReturnOptionalOfBooking() {
-        Page<Booking> actualPageOfBookings = bookingRepository
+        List<Booking> actualPageOfBookings = bookingRepository
                 .findAllByItemOwnerId(user2.getId(), page);
 
-        assertThat(List.of(booking2), is(actualPageOfBookings.toList()));
+        assertThat(List.of(booking2), is(actualPageOfBookings));
     }
 
     @Test
     void findAllByItemOwnerIdAndStartDateAfter_whenFound_thenReturnOptionalOfBooking() {
-        Page<Booking> actualPageOfBookings = bookingRepository
+        List<Booking> actualPageOfBookings = bookingRepository
                 .findAllByItemOwnerIdAndStartDateAfter(user2.getId(), LocalDateTime.now().minusDays(2), page);
 
-        assertThat(List.of(booking2), is(actualPageOfBookings.toList()));
+        assertThat(List.of(booking2), is(actualPageOfBookings));
     }
 
     @Test
     void findAllByItemOwnerIdAndEndDateIsBefore_whenFound_thenReturnOptionalOfBooking() {
-        Page<Booking> actualPageOfBookings = bookingRepository
+        List<Booking> actualPageOfBookings = bookingRepository
                 .findAllByItemOwnerIdAndEndDateIsBefore(user2.getId(), LocalDateTime.now().plusDays(2), page);
 
-        assertThat(List.of(booking2), is(actualPageOfBookings.toList()));
+        assertThat(List.of(booking2), is(actualPageOfBookings));
     }
 
     @Test
     void findAllByOwnerCurrent_whenFound_thenReturnOptionalOfBooking() {
-        Page<Booking> actualPageOfBookings = bookingRepository
+        List<Booking> actualPageOfBookings = bookingRepository
                 .findAllByOwnerCurrent(user2.getId(), LocalDateTime.now(), page);
 
-        assertThat(List.of(booking2), is(actualPageOfBookings.toList()));
+        assertThat(List.of(booking2), is(actualPageOfBookings));
     }
 
     @Test
     void findAllByItemOwnerIdAndStatus_whenFound_thenReturnOptionalOfBooking() {
-        Page<Booking> actualPageOfBookings = bookingRepository
+        List<Booking> actualPageOfBookings = bookingRepository
                 .findAllByItemOwnerIdAndStatus(user2.getId(), BookingState.APPROVED, page);
 
-        assertThat(List.of(booking2), is(actualPageOfBookings.toList()));
+        assertThat(List.of(booking2), is(actualPageOfBookings));
     }
 
     @Test

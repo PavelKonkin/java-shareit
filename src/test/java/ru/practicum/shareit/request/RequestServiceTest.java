@@ -6,14 +6,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.page.CustomPage;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.User;
@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -62,6 +62,8 @@ public class RequestServiceTest {
     private ItemDto itemDto1;
     private ItemDto itemDto2;
     private final Sort sort = Sort.by("created");
+    private final Pageable page = new CustomPage(0, 10, sort);
+
 
     @BeforeEach
     void setup() {
@@ -147,7 +149,7 @@ public class RequestServiceTest {
                 .build();
         item1 = Item.builder()
                 .id(1)
-                .requestId(1)
+                .request(itemRequest1)
                 .owner(user)
                 .available(true)
                 .name("test item 1")
@@ -155,7 +157,7 @@ public class RequestServiceTest {
                 .build();
         item2 = Item.builder()
                 .id(2)
-                .requestId(2)
+                .request(itemRequest2)
                 .owner(user)
                 .available(true)
                 .name("test item 2")
@@ -204,7 +206,7 @@ public class RequestServiceTest {
         when(itemMapper.convertListItem(List.of())).thenReturn(List.of());
         List<ItemRequestDto> expectedItemRequestsDto = List.of(itemRequestDto1, itemRequestDto2);
 
-        List<ItemRequestDto> actualItemRequestsDto = itemRequestService.getAllOwn(1);
+        List<ItemRequestDto> actualItemRequestsDto = itemRequestService.getAllOwn(1, sort);
 
         assertThat(actualItemRequestsDto, is(expectedItemRequestsDto));
         verify(itemRequestMapper, times(2)).convertRequest(any());
@@ -226,7 +228,7 @@ public class RequestServiceTest {
         when(itemMapper.convertListItem(List.of(item2))).thenReturn(List.of(itemDto2));
         List<ItemRequestDto> expectedItemRequestsDto = List.of(itemRequestWithItemsDto1, itemRequestWithItemsDto2);
 
-        List<ItemRequestDto> actualItemRequestsDto = itemRequestService.getAllOwn(1);
+        List<ItemRequestDto> actualItemRequestsDto = itemRequestService.getAllOwn(1, sort);
 
         assertThat(actualItemRequestsDto, is(expectedItemRequestsDto));
         verify(itemRequestMapper, times(2)).convertRequest(any());
@@ -243,7 +245,7 @@ public class RequestServiceTest {
                 .thenReturn(List.of());
         List<ItemRequestDto> expectedItemRequestsDto = List.of();
 
-        List<ItemRequestDto> actualItemRequestsDto = itemRequestService.getAllOwn(1);
+        List<ItemRequestDto> actualItemRequestsDto = itemRequestService.getAllOwn(1, sort);
 
         assertThat(actualItemRequestsDto, is(expectedItemRequestsDto));
         verify(itemRequestMapper, times(0)).convertRequest(any());
@@ -259,7 +261,7 @@ public class RequestServiceTest {
 
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
-                () -> itemRequestService.getAllOwn(notExistentUser.getId())
+                () -> itemRequestService.getAllOwn(notExistentUser.getId(), sort)
         );
 
         verify(itemRequestMapper, times(0)).convertRequest(any());
@@ -273,14 +275,13 @@ public class RequestServiceTest {
     @Test
     void getAll_whenThereAreRequestsWithoutItems_thenReturnListOfItemRequestDto() {
         when(userRepository.findById(2)).thenReturn(Optional.of(user2));
-        PageRequest page = PageRequest.of(0, 5, sort);
         when(itemRequestRepository.findAllByRequesterIdIsNot(2, page))
-                .thenReturn(new PageImpl<>(List.of(itemRequest1, itemRequest2)));
+                .thenReturn(List.of(itemRequest1, itemRequest2));
         when(itemRepository.findAllByRequestsId(List.of(1,2))).thenReturn(List.of());
         when(itemRequestMapper.convertRequest(itemRequest1)).thenReturn(itemRequestDto1);
         when(itemRequestMapper.convertRequest(itemRequest2)).thenReturn(itemRequestDto2);
 
-        List<ItemRequestDto> actualItemRequestDtos = itemRequestService.getAll(2, 0, 5);
+        List<ItemRequestDto> actualItemRequestDtos = itemRequestService.getAll(2, page);
 
         assertThat(List.of(itemRequestDto1, itemRequestDto2), is(actualItemRequestDtos));
         verify(userRepository, times(1)).findById(anyInt());
@@ -293,16 +294,15 @@ public class RequestServiceTest {
     @Test
     void getAll_whenThereAreRequestsWithItems_thenReturnListOfItemRequestDtoWithItems() {
         when(userRepository.findById(2)).thenReturn(Optional.of(user2));
-        PageRequest page = PageRequest.of(0, 5, sort);
         when(itemRequestRepository.findAllByRequesterIdIsNot(2, page))
-                .thenReturn(new PageImpl<>(List.of(itemRequest1, itemRequest2)));
+                .thenReturn(List.of(itemRequest1, itemRequest2));
         when(itemRepository.findAllByRequestsId(List.of(1,2))).thenReturn(List.of(item1, item2));
         when(itemMapper.convertListItem(List.of(item1))).thenReturn(List.of(itemDto1));
         when(itemMapper.convertListItem(List.of(item2))).thenReturn(List.of(itemDto2));
         when(itemRequestMapper.convertRequest(itemRequest1)).thenReturn(itemRequestDto1);
         when(itemRequestMapper.convertRequest(itemRequest2)).thenReturn(itemRequestDto2);
 
-        List<ItemRequestDto> actualItemRequestDtos = itemRequestService.getAll(2, 0, 5);
+        List<ItemRequestDto> actualItemRequestDtos = itemRequestService.getAll(2, page);
 
         assertThat(List.of(itemRequestWithItemsDto1, itemRequestWithItemsDto2), equalTo(actualItemRequestDtos));
         verify(userRepository, times(1)).findById(anyInt());
@@ -315,12 +315,11 @@ public class RequestServiceTest {
     @Test
     void getAll_whenThereAreNoOtherRequest_thenReturnEmptyList() {
         when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        PageRequest page = PageRequest.of(0, 5, sort);
         when(itemRequestRepository.findAllByRequesterIdIsNot(1, page))
-                .thenReturn(new PageImpl<>(List.of()));
+                .thenReturn(List.of());
         when(itemRepository.findAllByRequestsId(List.of())).thenReturn(List.of());
 
-        List<ItemRequestDto> actualItemRequestDtos = itemRequestService.getAll(1, 0, 5);
+        List<ItemRequestDto> actualItemRequestDtos = itemRequestService.getAll(1, page);
 
         assertThat(List.of(), is(actualItemRequestDtos));
         verify(userRepository, times(1)).findById(anyInt());
@@ -336,7 +335,7 @@ public class RequestServiceTest {
 
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
-                () -> itemRequestService.getAll(notExistentUser.getId(), 2, 2)
+                () -> itemRequestService.getAll(notExistentUser.getId(), page)
         );
 
         verify(itemRequestMapper, times(0)).convertRequest(any(ItemRequest.class));

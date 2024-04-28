@@ -1,8 +1,7 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
@@ -15,8 +14,9 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingsAndCommentsDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -27,33 +27,31 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final ItemMapper itemMapper;
-    private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final BookingMapper bookingMapper;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Autowired
     public ItemServiceImpl(ItemRepository itemRepository, ItemMapper itemMapper,
-                           UserRepository userRepository, UserMapper userMapper,
+                           UserRepository userRepository, ItemRequestRepository itemRequestRepository,
                            BookingRepository bookingRepository, BookingMapper bookingMapper,
                            CommentRepository commentRepository, CommentMapper commentMapper) {
         this.itemRepository = itemRepository;
         this.itemMapper = itemMapper;
         this.userRepository = userRepository;
-        this.userMapper = userMapper;
         this.bookingRepository = bookingRepository;
         this.bookingMapper = bookingMapper;
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     @Override
-    public List<ItemWithBookingsAndCommentsDto> getAll(int userId, int from, int size) {
-        Sort sort = Sort.by("id");
-        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size, sort);
-        Page<Item> items = itemRepository.findAllByOwnerId(userId, page);
+    public List<ItemWithBookingsAndCommentsDto> getAll(int userId, Pageable page) {
+        List<Item> items = itemRepository.findAllByOwnerId(userId, page);
 
         List<Integer> itemsId = items.stream()
                 .map(Item::getId)
@@ -87,8 +85,13 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto create(ItemDto itemDto, int userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователя с id " + userId + " не существует"));
-        itemDto.setOwner(userMapper.convertUser(user));
-        Item newItem = itemMapper.convertItemDto(itemDto);
+        Item newItem = itemMapper.convertItemDto(itemDto);Integer requestId = itemDto.getRequestId();
+        if (requestId != null) {
+            ItemRequest itemRequest = itemRequestRepository.findById(itemDto.getRequestId())
+                    .orElseThrow(() -> new NotFoundException("Запроса с id " + requestId + " не существует"));
+            newItem.setRequest(itemRequest);
+        }
+        newItem.setOwner(user);
         return itemMapper.convertItem(itemRepository.save(newItem));
     }
 
@@ -96,7 +99,6 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto update(ItemDto itemDto, int userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователя с id " + userId + " не существует"));
-        itemDto.setOwner(userMapper.convertUser(user));
         Item existentItem = itemRepository.findById(itemDto.getId())
                 .orElseThrow(() -> new NotFoundException("Предмета с id " + itemDto.getId() + " не существует"));
 
@@ -134,14 +136,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> search(String text, int from, int size) {
+    public List<ItemDto> search(String text, Pageable page) {
         if (text.isBlank()) {
             return Collections.emptyList();
         }
-        Sort sort = Sort.by("id");
-        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size, sort);
-        Page<Item> items = itemRepository.search(text, page);
-        return itemMapper.convertListItem(items.toList());
+        List<Item> items = itemRepository.search(text, page);
+        return itemMapper.convertListItem(items);
     }
 
     private void setBookingsToItemDto(ItemWithBookingsAndCommentsDto itemWithBookingsDto,

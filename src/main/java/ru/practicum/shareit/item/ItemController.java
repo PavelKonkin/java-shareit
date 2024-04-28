@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -10,10 +12,10 @@ import ru.practicum.shareit.item.dto.CommentCreateDto;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingsAndCommentsDto;
+import ru.practicum.shareit.page.CustomPage;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
@@ -23,6 +25,7 @@ import java.util.List;
 public class ItemController {
     private final ItemService itemService;
     private final CommentService commentService;
+    private final Sort sort = Sort.by("id");
 
     @Autowired
     public ItemController(ItemService itemService, CommentService commentService) {
@@ -31,19 +34,20 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemWithBookingsAndCommentsDto> getAllOwn(@RequestHeader(Constants.USER_HEADER) @Positive int userId,
+    public List<ItemWithBookingsAndCommentsDto> getAllOwn(@RequestHeader(Constants.USER_HEADER) int userId,
                                                           @RequestParam(defaultValue = "0") @Min(0) int from,
                                                           @RequestParam(defaultValue = "10") @Min(1) int size) {
         log.info("Получен запрос на получение списка предметов пользователя с id {}," +
                 " начиная с {}, по {} предметов на странице", userId, from, size);
-        List<ItemWithBookingsAndCommentsDto> result = itemService.getAll(userId, from, size);
+        Pageable page = new CustomPage(from, size, sort);
+        List<ItemWithBookingsAndCommentsDto> result = itemService.getAll(userId, page);
         log.info("Найден список предметов пользователя с id {}: {}", userId, result);
         return result;
     }
 
     @GetMapping("/{itemId}")
-    public ItemWithBookingsAndCommentsDto get(@PathVariable @Positive int itemId,
-                                              @RequestHeader(Constants.USER_HEADER) @Positive int userId) {
+    public ItemWithBookingsAndCommentsDto get(@PathVariable int itemId,
+                                              @RequestHeader(Constants.USER_HEADER) int userId) {
         log.info("Получен запрос на получение предмета с id {}", itemId);
         ItemWithBookingsAndCommentsDto result = itemService.get(itemId, userId);
         log.info("Найден предмет {}:",  result);
@@ -56,7 +60,8 @@ public class ItemController {
                                 @RequestParam(defaultValue = "10") @Min(1) int size) {
         log.info("Получен запрос на получение списка предметов по запросу {}," +
                 " начиная с {}, по {} предметов на странице", text, from, size);
-        List<ItemDto> result = itemService.search(text, from, size);
+        Pageable page = new CustomPage(from, size, sort);
+        List<ItemDto> result = itemService.search(text, page);
         log.info("Найден список предметов : {}", result);
         return result;
 
@@ -65,7 +70,7 @@ public class ItemController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ItemDto create(@Valid @RequestBody ItemDto itemDto,
-                          @RequestHeader(Constants.USER_HEADER) @Positive int userId) {
+                          @RequestHeader(Constants.USER_HEADER) int userId) {
         log.info("Получен запрос на создание предмета {} с id пользоателя {}", itemDto, userId);
         ItemDto result = itemService.create(itemDto, userId);
         log.info("Создан предмет {}:",  result);
@@ -74,8 +79,8 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public ItemDto update(@RequestBody ItemDto itemDto,
-                          @RequestHeader(Constants.USER_HEADER) @Positive int userId,
-                          @PathVariable @Positive int itemId) {
+                          @RequestHeader(Constants.USER_HEADER) int userId,
+                          @PathVariable int itemId) {
         log.info("Получен запрос на обновление предмета {} с id пользоателя {}", itemDto, userId);
         itemDto.setId(itemId);
         ItemDto result = itemService.update(itemDto, userId);
@@ -85,8 +90,8 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentDto comment(@Valid @RequestBody CommentCreateDto commentCreateDto,
-                              @RequestHeader(Constants.USER_HEADER) @Positive int userId,
-                              @PathVariable @Positive int itemId) {
+                              @RequestHeader(Constants.USER_HEADER) int userId,
+                              @PathVariable int itemId) {
         commentCreateDto.setItemId(itemId);
         commentCreateDto.setAuthorId(userId);
         log.info("Получен запрос на создание комментария к предмету с id {} пользоателем {}", itemId, userId);

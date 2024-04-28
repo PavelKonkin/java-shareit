@@ -1,15 +1,13 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@NamedEntityGraph(name = "item.owner", attributeNodes = {
-        @NamedAttributeNode("owner")
-})
 @Table(name = "items")
 @Getter
 @Setter
@@ -30,8 +28,10 @@ public class Item {
     private User owner;
     @Column(name = "is_available")
     private Boolean available;
-    @Column(name = "request_id")
-    private Integer requestId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id")
+    @ToString.Exclude
+    private ItemRequest request;
 
     @Override
     public boolean equals(Object o) {

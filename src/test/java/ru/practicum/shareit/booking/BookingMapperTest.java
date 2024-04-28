@@ -56,14 +56,11 @@ public class BookingMapperTest {
                 .description("test description")
                 .owner(user)
                 .available(true)
-                .requestId(1)
                 .build();
         itemDto = ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
-                .owner(userDto)
-                .requestId(item.getRequestId())
                 .available(item.getAvailable())
                 .build();
         booking = Booking.builder()

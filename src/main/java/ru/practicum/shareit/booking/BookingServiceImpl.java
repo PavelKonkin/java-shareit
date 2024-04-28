@@ -1,9 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -15,6 +13,7 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -96,111 +95,78 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllForBooker(int userId, BookingStateDto bookingStateDto, int from, int size) {
-        return getAll(userId, bookingStateDto, from, size, AllFor.BOOKER);
-    }
-
-    @Override
-    public List<BookingDto> getAllForOwner(int userId, BookingStateDto bookingStateDto, int from, int size) {
-        return getAll(userId, bookingStateDto, from, size, AllFor.OWNER);
-    }
-
-    private void checkUser(int userId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователя с id "
-                        + userId + " не существует"));
-    }
-
-    private List<BookingDto> getAll(int userId, BookingStateDto bookingStateDto, int from, int size, AllFor forWhom) {
+    public List<BookingDto> getAllForBooker(int userId, BookingStateDto bookingStateDto, Pageable page) {
         checkUser(userId);
-        List<Booking> result;
-        Page<Booking> pageResult = Page.empty();
-        Sort sort = Sort.by("id").descending();
-        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size, sort);
+        List<Booking> result = new ArrayList<>();
 
         switch (bookingStateDto) {
             case ALL:
-                if (forWhom.equals(AllFor.OWNER)) {
-                    pageResult = bookingRepository.findAllByItemOwnerId(userId, page);
+                result = bookingRepository.findAllByBookerId(userId, page);
                     break;
-                } else if (forWhom.equals(AllFor.BOOKER)) {
-                    pageResult = bookingRepository.findAllByBookerId(userId, page);
-                    break;
-                } else {
-                    break;
-                }
             case FUTURE:
-                if (forWhom.equals(AllFor.OWNER)) {
-                    pageResult = bookingRepository.findAllByItemOwnerIdAndStartDateAfter(userId,
-                            LocalDateTime.now(), page);
+                result = bookingRepository.findAllByBookerIdAndStartDateAfter(userId, LocalDateTime.now(), page);
                     break;
-                } else if (forWhom.equals(AllFor.BOOKER)) {
-                    pageResult = bookingRepository.findAllByBookerIdAndStartDateAfter(userId, LocalDateTime.now(), page);
-                    break;
-                } else {
-                    break;
-                }
             case PAST:
-                if (forWhom.equals(AllFor.OWNER)) {
-                    pageResult = bookingRepository.findAllByItemOwnerIdAndEndDateIsBefore(userId,
-                            LocalDateTime.now(), page);
+                result = bookingRepository.findAllByBookerIdAndEndDateIsBefore(userId, LocalDateTime.now(), page);
                     break;
-                } else if (forWhom.equals(AllFor.BOOKER)) {
-                    pageResult = bookingRepository.findAllByBookerIdAndEndDateIsBefore(userId, LocalDateTime.now(), page);
-                    break;
-                } else {
-                    break;
-                }
             case REJECTED:
-                if (forWhom.equals(AllFor.OWNER)) {
-                    pageResult = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.REJECTED, page);
+                result = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.REJECTED, page);
                     break;
-                } else if (forWhom.equals(AllFor.BOOKER)) {
-                    pageResult = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.REJECTED, page);
-                    break;
-                } else {
-                    break;
-                }
             case APPROVED:
-                if (forWhom.equals(AllFor.OWNER)) {
-                    pageResult = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.APPROVED, page);
+                result = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.APPROVED, page);
                     break;
-                } else if (forWhom.equals(AllFor.BOOKER)) {
-                    pageResult = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.APPROVED, page);
-                    break;
-                } else {
-                    break;
-                }
             case WAITING:
-                if (forWhom.equals(AllFor.OWNER)) {
-                    pageResult = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.WAITING, page);
+                result = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.WAITING, page);
                     break;
-                } else if (forWhom.equals(AllFor.BOOKER)) {
-                    pageResult = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.WAITING, page);
-                    break;
-                } else {
-                    break;
-                }
             case CURRENT:
-                if (forWhom.equals(AllFor.OWNER)) {
-                    pageResult = bookingRepository.findAllByOwnerCurrent(userId, LocalDateTime.now(), page);
+                result = bookingRepository.findAllByBookerCurrent(userId, LocalDateTime.now(), page);
                     break;
-                } else if (forWhom.equals(AllFor.BOOKER)) {
-                    pageResult = bookingRepository.findAllByBookerCurrent(userId, LocalDateTime.now(), page);
-                    break;
-                } else {
-                    break;
-                }
         }
-        result = pageResult.toList();
 
         return result.stream()
                 .map(bookingMapper::convertBooking)
                 .collect(Collectors.toList());
     }
 
-    private enum AllFor {
-        BOOKER,
-        OWNER
+    @Override
+    public List<BookingDto> getAllForOwner(int userId, BookingStateDto bookingStateDto, Pageable page) {
+        checkUser(userId);
+        List<Booking> result = new ArrayList<>();
+
+        switch (bookingStateDto) {
+            case ALL:
+                result = bookingRepository.findAllByItemOwnerId(userId, page);
+                    break;
+            case FUTURE:
+                result = bookingRepository.findAllByItemOwnerIdAndStartDateAfter(userId,
+                            LocalDateTime.now(), page);
+                    break;
+            case PAST:
+                result = bookingRepository.findAllByItemOwnerIdAndEndDateIsBefore(userId,
+                            LocalDateTime.now(), page);
+                    break;
+            case REJECTED:
+                result = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.REJECTED, page);
+                    break;
+            case APPROVED:
+                result = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.APPROVED, page);
+                    break;
+            case WAITING:
+                result = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.WAITING, page);
+                    break;
+            case CURRENT:
+                result = bookingRepository.findAllByOwnerCurrent(userId, LocalDateTime.now(), page);
+                    break;
+        }
+
+        return result.stream()
+                .map(bookingMapper::convertBooking)
+                .collect(Collectors.toList());
+    }
+
+    private void checkUser(int userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователя с id "
+                        + userId + " не существует"));
     }
 }
