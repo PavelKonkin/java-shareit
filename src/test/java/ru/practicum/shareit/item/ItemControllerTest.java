@@ -17,7 +17,7 @@ import ru.practicum.shareit.item.dto.CommentCreateDto;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingsAndCommentsDto;
-import ru.practicum.shareit.page.CustomPage;
+import ru.practicum.shareit.page.OffsetPage;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.nio.charset.StandardCharsets;
@@ -122,7 +122,7 @@ public class ItemControllerTest {
     void getAllOwn_whenSuccessful_thenReturnListOfItemsDtoWithBookingsAndComments() throws Exception {
         int userId = 1;
         Sort sort = Sort.by("id");
-        Pageable page = new CustomPage(0, 10, sort);
+        Pageable page = new OffsetPage(0, 10, sort);
         when(itemService.getAll(userId, page))
                 .thenReturn(List.of(itemWithBookingsAndCommentsDto));
 
@@ -188,7 +188,7 @@ public class ItemControllerTest {
         int from = 0;
         int size = 10;
         Sort sort = Sort.by("id");
-        Pageable page = new CustomPage(from, size, sort);
+        Pageable page = new OffsetPage(from, size, sort);
         when(itemService.search(text, page)).thenReturn(List.of(itemDto));
 
         mvc.perform(get("/items/search?text=" + text + "&from=" + from + "&size=" + size)

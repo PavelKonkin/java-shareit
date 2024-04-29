@@ -12,7 +12,7 @@ import ru.practicum.shareit.booking.dto.BookingStateDto;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.page.CustomPage;
+import ru.practicum.shareit.page.OffsetPage;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
 @SpringBootTest
-public class BookingIT {
+public class BookingTest {
     @Autowired
     private BookingRepository bookingRepository;
     @Autowired
@@ -46,7 +46,7 @@ public class BookingIT {
     private Booking booking;
     private Booking bookingApproved;
     private final Sort sort = Sort.by("startDate").descending();
-    private final Pageable page = new CustomPage(0, 10, sort);
+    private final Pageable page = new OffsetPage(0, 10, sort);
 
     @BeforeEach
     void setup() {

@@ -12,7 +12,7 @@ import ru.practicum.shareit.item.dto.CommentCreateDto;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingsAndCommentsDto;
-import ru.practicum.shareit.page.CustomPage;
+import ru.practicum.shareit.page.OffsetPage;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -39,7 +39,7 @@ public class ItemController {
                                                           @RequestParam(defaultValue = "10") @Min(1) int size) {
         log.info("Получен запрос на получение списка предметов пользователя с id {}," +
                 " начиная с {}, по {} предметов на странице", userId, from, size);
-        Pageable page = new CustomPage(from, size, sort);
+        Pageable page = new OffsetPage(from, size, sort);
         List<ItemWithBookingsAndCommentsDto> result = itemService.getAll(userId, page);
         log.info("Найден список предметов пользователя с id {}: {}", userId, result);
         return result;
@@ -60,7 +60,7 @@ public class ItemController {
                                 @RequestParam(defaultValue = "10") @Min(1) int size) {
         log.info("Получен запрос на получение списка предметов по запросу {}," +
                 " начиная с {}, по {} предметов на странице", text, from, size);
-        Pageable page = new CustomPage(from, size, sort);
+        Pageable page = new OffsetPage(from, size, sort);
         List<ItemDto> result = itemService.search(text, page);
         log.info("Найден список предметов : {}", result);
         return result;

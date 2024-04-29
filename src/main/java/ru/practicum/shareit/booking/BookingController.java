@@ -11,7 +11,7 @@ import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingStateDto;
 import ru.practicum.shareit.constant.Constants;
-import ru.practicum.shareit.page.CustomPage;
+import ru.practicum.shareit.page.OffsetPage;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -73,7 +73,7 @@ public class BookingController {
         log.info("Получен запрос на получение списка бронирований пользоателя с id {} со статусом {}," +
                         " начиная с {}, по {} предметов на странице", userId, state, from, size);
         BookingStateDto bookingStateDto = getBookingStateValue(state);
-        Pageable page = new CustomPage(from, size, sort);
+        Pageable page = new OffsetPage(from, size, sort);
         List<BookingDto> bookingDto = bookingService.getAllForBooker(userId, bookingStateDto, page);
         log.info("Сформирован список бронирований {} пользователя с id {}",
                 bookingDto, userId);
@@ -88,7 +88,7 @@ public class BookingController {
         log.info("Получен запрос на получение списка бронирований вещей пользоателя с id {} со статусом {}," +
                 " начиная с {}, по {} предметов на странице", userId, state, from, size);
         BookingStateDto bookingStateDto = getBookingStateValue(state);
-        Pageable page = new CustomPage(from, size, sort);
+        Pageable page = new OffsetPage(from, size, sort);
         List<BookingDto> bookingDto = bookingService.getAllForOwner(userId, bookingStateDto, page);
         log.info("Сформирован список бронирований вещей {} пользователя с id {}",
                 bookingDto, userId);

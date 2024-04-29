@@ -17,7 +17,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingStateDto;
 import ru.practicum.shareit.constant.Constants;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.page.CustomPage;
+import ru.practicum.shareit.page.OffsetPage;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.ConstraintViolationException;
@@ -49,7 +49,7 @@ public class BookingControllerTest {
     private UserDto userDto2;
     private ItemDto itemDto;
     private final Sort sort = Sort.by("startDate").descending();
-    private final Pageable page = new CustomPage(0, 10, sort);
+    private final Pageable page = new OffsetPage(0, 10, sort);
 
 
     @BeforeEach

@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.page.CustomPage;
+import ru.practicum.shareit.page.OffsetPage;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.User;
@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
 @SpringBootTest
-public class RequestIT {
+public class RequestTest {
     @Autowired
     private ItemRequestService itemRequestService;
 
@@ -43,7 +43,7 @@ public class RequestIT {
     private ItemRequestDto wrongItemRequestDto;
     private ItemRequestDto itemRequestDtoWithItems;
     private final Sort sort = Sort.by("created");
-    private final Pageable page = new CustomPage(0, 10, sort);
+    private final Pageable page = new OffsetPage(0, 10, sort);
 
     @BeforeEach
     void setup() {

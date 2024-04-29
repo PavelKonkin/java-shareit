@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.constant.Constants;
-import ru.practicum.shareit.page.CustomPage;
+import ru.practicum.shareit.page.OffsetPage;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 
@@ -54,7 +54,7 @@ public class ItemRequestController {
                                        @RequestParam(defaultValue = "10") @Min(1) int size) {
         log.info("Получен запрос на список запросов начиная с позиции {}," +
                 " по {} запросов на странице от пользоателя с id {}", from, size, userId);
-        Pageable page = new CustomPage(from, size, sort);
+        Pageable page = new OffsetPage(from, size, sort);
         List<ItemRequestDto> result = itemRequestService.getAll(userId, page);
         log.info("Получен список запросов пользователя с id {}: {}", userId, result);
         return result;

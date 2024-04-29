@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import ru.practicum.shareit.constant.Constants;
-import ru.practicum.shareit.page.CustomPage;
+import ru.practicum.shareit.page.OffsetPage;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 
@@ -48,7 +48,7 @@ public class RequestControllerTest {
     private ItemRequestCreateDto noDescriptionRequestCreateDto;
     private ItemRequestDto itemRequestDto;
     private final Sort sort = Sort.by("created");
-    private final Pageable page = new CustomPage(0, 10, sort);
+    private final Pageable page = new OffsetPage(0, 10, sort);
 
     @BeforeEach
     void setup() {

@@ -13,7 +13,7 @@ import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.page.CustomPage;
+import ru.practicum.shareit.page.OffsetPage;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.User;
@@ -62,7 +62,7 @@ public class RequestServiceTest {
     private ItemDto itemDto1;
     private ItemDto itemDto2;
     private final Sort sort = Sort.by("created");
-    private final Pageable page = new CustomPage(0, 10, sort);
+    private final Pageable page = new OffsetPage(0, 10, sort);
 
 
     @BeforeEach

@@ -14,7 +14,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingsAndCommentsDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.page.CustomPage;
+import ru.practicum.shareit.page.OffsetPage;
 import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
 @SpringBootTest
-public class ItemIT {
+public class ItemTest {
     @Autowired
     private ItemRepository itemRepository;
     @Autowired
@@ -106,7 +106,7 @@ public class ItemIT {
     @Test
     void getAll_whenSuccessful_thenReturnListOfItemDtos() {
         Sort sort = Sort.by("id");
-        CustomPage page = new CustomPage(0, 10, sort);
+        OffsetPage page = new OffsetPage(0, 10, sort);
 
         List<ItemWithBookingsAndCommentsDto> actualListOfItemDtos
                 = itemService.getAll(user1.getId(), page);
@@ -120,7 +120,7 @@ public class ItemIT {
     @Test
     void getAll_whenUserHasNoItems_thenReturnEmptyList() {
         Sort sort = Sort.by("id");
-        CustomPage page = new CustomPage(0, 10, sort);
+        OffsetPage page = new OffsetPage(0, 10, sort);
 
         List<ItemWithBookingsAndCommentsDto> actualListOfItemDtos
                 = itemService.getAll(user2.getId(), page);
@@ -203,7 +203,7 @@ public class ItemIT {
     void search_whenSuccessful_thenReturnListOfItemDtos() {
         String text = "test";
         Sort sort = Sort.by("id");
-        CustomPage page = new CustomPage(0, 10, sort);
+        OffsetPage page = new OffsetPage(0, 10, sort);
 
         List<ItemDto> actualListOfItemDtos = itemService.search(text, page);
 
@@ -215,7 +215,7 @@ public class ItemIT {
     void search_whenSearchTextEmpty_thenReturnEmptyList() {
         String text = "";
         Sort sort = Sort.by("id");
-        CustomPage page = new CustomPage(0, 10, sort);
+        OffsetPage page = new OffsetPage(0, 10, sort);
 
         List<ItemDto> actualListOfItemDtos = itemService.search(text, page);
 
