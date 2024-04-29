@@ -1,7 +1,21 @@
 package ru.practicum.shareit.request.dto;
 
-/**
- * TODO Sprint add-item-requests.
- */
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.*;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.serializer.LocalDateTimeSerializer;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Data
+@Builder(toBuilder = true)
+@AllArgsConstructor
+@NoArgsConstructor(force = true)
 public class ItemRequestDto {
+    private Integer id;
+    private String description;
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    private LocalDateTime created;
+    private List<ItemDto> items;
 }

@@ -1,7 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -95,67 +95,70 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllForBooker(int userId, BookingStateDto bookingStateDto) {
+    public List<BookingDto> getAllForBooker(int userId, BookingStateDto bookingStateDto, Pageable page) {
         checkUser(userId);
         List<Booking> result = new ArrayList<>();
-        Sort sort = Sort.by("id").descending();
 
         switch (bookingStateDto) {
             case ALL:
-                result = bookingRepository.findAllByBookerId(userId, sort);
-                break;
+                result = bookingRepository.findAllByBookerId(userId, page);
+                    break;
             case FUTURE:
-                result = bookingRepository.findAllByBookerIdAndStartDateAfter(userId, LocalDateTime.now(), sort);
-                break;
+                result = bookingRepository.findAllByBookerIdAndStartDateAfter(userId, LocalDateTime.now(), page);
+                    break;
             case PAST:
-                result = bookingRepository.findAllByBookerIdAndEndDateIsBefore(userId, LocalDateTime.now(), sort);
-                break;
+                result = bookingRepository.findAllByBookerIdAndEndDateIsBefore(userId, LocalDateTime.now(), page);
+                    break;
             case REJECTED:
-                result = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.REJECTED, sort);
-                break;
+                result = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.REJECTED, page);
+                    break;
             case APPROVED:
-                result = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.APPROVED, sort);
-                break;
+                result = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.APPROVED, page);
+                    break;
             case WAITING:
-                result = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.WAITING, sort);
-                break;
+                result = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.WAITING, page);
+                    break;
             case CURRENT:
-                result = bookingRepository.findAllByBookerCurrent(userId, LocalDateTime.now());
+                result = bookingRepository.findAllByBookerCurrent(userId, LocalDateTime.now(), page);
+                    break;
         }
+
         return result.stream()
                 .map(bookingMapper::convertBooking)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<BookingDto> getAllForOwner(int userId, BookingStateDto bookingStateDto) {
+    public List<BookingDto> getAllForOwner(int userId, BookingStateDto bookingStateDto, Pageable page) {
         checkUser(userId);
         List<Booking> result = new ArrayList<>();
-        Sort sort = Sort.by("id").descending();
+
         switch (bookingStateDto) {
             case ALL:
-                result = bookingRepository.findAllByItemOwnerId(userId, sort);
-                break;
+                result = bookingRepository.findAllByItemOwnerId(userId, page);
+                    break;
             case FUTURE:
                 result = bookingRepository.findAllByItemOwnerIdAndStartDateAfter(userId,
-                        LocalDateTime.now(), sort);
-                break;
+                            LocalDateTime.now(), page);
+                    break;
             case PAST:
                 result = bookingRepository.findAllByItemOwnerIdAndEndDateIsBefore(userId,
-                        LocalDateTime.now(), sort);
-                break;
+                            LocalDateTime.now(), page);
+                    break;
             case REJECTED:
-                result = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.REJECTED, sort);
-                break;
+                result = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.REJECTED, page);
+                    break;
             case APPROVED:
-                result = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.APPROVED, sort);
-                break;
+                result = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.APPROVED, page);
+                    break;
             case WAITING:
-                result = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.WAITING, sort);
-                break;
+                result = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.WAITING, page);
+                    break;
             case CURRENT:
-                result = bookingRepository.findAllByOwnerCurrent(userId, LocalDateTime.now());
+                result = bookingRepository.findAllByOwnerCurrent(userId, LocalDateTime.now(), page);
+                    break;
         }
+
         return result.stream()
                 .map(bookingMapper::convertBooking)
                 .collect(Collectors.toList());

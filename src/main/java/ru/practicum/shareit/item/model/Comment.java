@@ -5,7 +5,6 @@ import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Entity
 @NamedEntityGraph(name = "comment.item.owner", attributeNodes = {
@@ -35,17 +34,4 @@ public class Comment {
     private User author;
     private String text;
     private LocalDateTime created = LocalDateTime.now();
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Comment comment = (Comment) o;
-        return Objects.equals(id, comment.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
 }
