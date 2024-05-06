@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 @Data
 @Builder(toBuilder = true)
@@ -15,5 +14,5 @@ import java.time.ZoneId;
 public class ItemRequestCreateDto {
     private String description;
     private Long requesterId;
-    private LocalDateTime created = LocalDateTime.now(ZoneId.of("UTC+3"));
+    private LocalDateTime created = LocalDateTime.now();
 }

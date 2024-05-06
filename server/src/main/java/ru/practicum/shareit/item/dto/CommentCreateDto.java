@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 @Data
 @Builder(toBuilder = true)
@@ -16,5 +15,5 @@ public class CommentCreateDto {
     private String text;
     private Long authorId;
     private Long itemId;
-    private LocalDateTime created = LocalDateTime.now(ZoneId.of("UTC+3"));
+    private LocalDateTime created = LocalDateTime.now();
 }
