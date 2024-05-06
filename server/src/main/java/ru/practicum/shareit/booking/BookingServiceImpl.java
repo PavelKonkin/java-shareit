@@ -13,7 +13,6 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -106,11 +105,11 @@ public class BookingServiceImpl implements BookingService {
                     break;
             case FUTURE:
                 result = bookingRepository.findAllByBookerIdAndStartDateAfter(userId,
-                        LocalDateTime.now(ZoneId.of("UTC+3")), page);
+                        LocalDateTime.now(), page);
                     break;
             case PAST:
                 result = bookingRepository.findAllByBookerIdAndEndDateIsBefore(userId,
-                        LocalDateTime.now(ZoneId.of("UTC+3")), page);
+                        LocalDateTime.now(), page);
                     break;
             case REJECTED:
                 result = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.REJECTED, page);
@@ -123,7 +122,7 @@ public class BookingServiceImpl implements BookingService {
                     break;
             case CURRENT:
                 result = bookingRepository.findAllByBookerCurrent(userId,
-                        LocalDateTime.now(ZoneId.of("UTC+3")), page);
+                        LocalDateTime.now(), page);
                     break;
         }
 
@@ -143,11 +142,11 @@ public class BookingServiceImpl implements BookingService {
                     break;
             case FUTURE:
                 result = bookingRepository.findAllByItemOwnerIdAndStartDateAfter(userId,
-                            LocalDateTime.now(ZoneId.of("UTC+3")), page);
+                            LocalDateTime.now(), page);
                     break;
             case PAST:
                 result = bookingRepository.findAllByItemOwnerIdAndEndDateIsBefore(userId,
-                            LocalDateTime.now(ZoneId.of("UTC+3")), page);
+                            LocalDateTime.now(), page);
                     break;
             case REJECTED:
                 result = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.REJECTED, page);
@@ -160,7 +159,7 @@ public class BookingServiceImpl implements BookingService {
                     break;
             case CURRENT:
                 result = bookingRepository.findAllByOwnerCurrent(userId,
-                        LocalDateTime.now(ZoneId.of("UTC+3")), page);
+                        LocalDateTime.now(), page);
                     break;
         }
 

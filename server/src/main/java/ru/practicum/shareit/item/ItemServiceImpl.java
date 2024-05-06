@@ -20,7 +20,6 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -149,11 +148,11 @@ public class ItemServiceImpl implements ItemService {
     private void setBookingsToItemDto(ItemWithBookingsAndCommentsDto itemWithBookingsDto,
                                       List<Booking> itemBookings) {
         Optional<Booking> lastBooking = itemBookings.stream()
-                .filter(e -> e.getStartDate().isBefore(LocalDateTime.now(ZoneId.of("UTC+3")))
+                .filter(e -> e.getStartDate().isBefore(LocalDateTime.now())
                         && e.getStatus().equals(BookingState.APPROVED))
                 .max(Comparator.comparing(Booking::getStartDate));
         Optional<Booking> nextBooking = itemBookings.stream()
-                .filter(e -> e.getStartDate().isAfter(LocalDateTime.now(ZoneId.of("UTC+3")))
+                .filter(e -> e.getStartDate().isAfter(LocalDateTime.now())
                         && e.getStatus().equals(BookingState.APPROVED))
                 .min(Comparator.comparing(Booking::getStartDate));
         BookingShortDto lastBookingDto = lastBooking.map(bookingMapper::convertBookingToShortDto).orElse(null);
