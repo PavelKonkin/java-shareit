@@ -27,7 +27,7 @@ server:
 spring:
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/shareit
+    url: jdbc:postgresql://localhost:6541/shareit
     username: shareit_user
     password: shareitpass
 
